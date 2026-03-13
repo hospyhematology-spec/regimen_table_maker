@@ -1,0 +1,27 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const jsx_runtime_1 = require("react/jsx-runtime");
+const react_1 = __importDefault(require("react"));
+const store_1 = require("../store");
+const lucide_react_1 = require("lucide-react");
+const exportUtils_1 = require("../exportUtils");
+const fileUtils_1 = require("../fileUtils");
+const OutputPage = () => {
+    const { currentRegimen } = (0, store_1.useRegimenStore)();
+    if (!currentRegimen)
+        return null;
+    const core = currentRegimen.regimen_core;
+    // Basic validation
+    const validationItems = [
+        { label: 'レジメン名', ok: !!core.regimen_name },
+        { label: '癌腫', ok: !!core.cancer_type },
+        { label: 'コース設定', ok: core.courses.length > 0 },
+        { label: '投与日(Day)設定', ok: core.courses.every(c => c.groups.every(g => g.items.every(i => !!i.schedule.excel_display_hint))) },
+    ];
+    return ((0, jsx_runtime_1.jsxs)("div", { className: "max-w-3xl mx-auto space-y-10", children: [(0, jsx_runtime_1.jsxs)("div", { className: "text-center space-y-2", children: [(0, jsx_runtime_1.jsx)("h2", { className: "text-3xl font-bold text-slate-800", children: "\u51FA\u529B\u3068\u4FDD\u5B58" }), (0, jsx_runtime_1.jsx)("p", { className: "text-slate-500", children: "\u4F5C\u6210\u3057\u305F\u30EC\u30B8\u30E1\u30F3\u3092\u30D5\u30A1\u30A4\u30EB\u3068\u3057\u3066\u51FA\u529B\u3057\u307E\u3059\u3002" })] }), (0, jsx_runtime_1.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: [(0, jsx_runtime_1.jsxs)("div", { className: "card hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center p-8 border-t-4 border-t-green-500", onClick: () => (0, exportUtils_1.generateExcel)(currentRegimen), children: [(0, jsx_runtime_1.jsx)("div", { className: "p-4 bg-green-50 rounded-full text-green-600 mb-4", children: (0, jsx_runtime_1.jsx)(lucide_react_1.FileSpreadsheet, { size: 40 }) }), (0, jsx_runtime_1.jsx)("h3", { className: "font-bold text-lg mb-2", children: "Excel\u51FA\u529B" }), (0, jsx_runtime_1.jsx)("p", { className: "text-xs text-slate-400", children: "\u30EC\u30B8\u30E1\u30F3\u8868 (1\u30B3\u30FC\u30B91\u30B7\u30FC\u30C8)" }), (0, jsx_runtime_1.jsxs)("div", { className: "mt-auto pt-4 text-green-600 flex items-center gap-1 font-medium", children: ["\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9 ", (0, jsx_runtime_1.jsx)(lucide_react_1.ChevronRight, { size: 16 })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center p-8 border-t-4 border-t-blue-500", onClick: () => (0, exportUtils_1.generateWord)(currentRegimen), children: [(0, jsx_runtime_1.jsx)("div", { className: "p-4 bg-blue-50 rounded-full text-blue-600 mb-4", children: (0, jsx_runtime_1.jsx)(lucide_react_1.FileText, { size: 40 }) }), (0, jsx_runtime_1.jsx)("h3", { className: "font-bold text-lg mb-2", children: "Word\u51FA\u529B" }), (0, jsx_runtime_1.jsx)("p", { className: "text-xs text-slate-400", children: "\u88DC\u5B8C\u8CC7\u6599 (\u30AC\u30A4\u30C9\u30E9\u30A4\u30F3\u6E96\u62E0)" }), (0, jsx_runtime_1.jsxs)("div", { className: "mt-auto pt-4 text-blue-600 flex items-center gap-1 font-medium", children: ["\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9 ", (0, jsx_runtime_1.jsx)(lucide_react_1.ChevronRight, { size: 16 })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center p-8 border-t-4 border-t-orange-500", onClick: () => (0, fileUtils_1.exportToJsonFile)(currentRegimen), children: [(0, jsx_runtime_1.jsx)("div", { className: "p-4 bg-orange-50 rounded-full text-orange-600 mb-4", children: (0, jsx_runtime_1.jsx)(lucide_react_1.FileJson, { size: 40 }) }), (0, jsx_runtime_1.jsx)("h3", { className: "font-bold text-lg mb-2", children: "JSON\u4FDD\u5B58" }), (0, jsx_runtime_1.jsx)("p", { className: "text-xs text-slate-400", children: "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u30FB\u518D\u7DE8\u96C6\u7528" }), (0, jsx_runtime_1.jsxs)("div", { className: "mt-auto pt-4 text-orange-600 flex items-center gap-1 font-medium", children: ["\u4FDD\u5B58\u3059\u308B ", (0, jsx_runtime_1.jsx)(lucide_react_1.ChevronRight, { size: 16 })] })] })] }), (0, jsx_runtime_1.jsxs)("div", { className: "card bg-slate-50 border-none", children: [(0, jsx_runtime_1.jsxs)("h4", { className: "font-bold text-slate-700 mb-4 flex items-center gap-2", children: [(0, jsx_runtime_1.jsx)(lucide_react_1.CheckCircle2, { size: 18, className: "text-slate-400" }), " \u5165\u529B\u60C5\u5831\u306E\u78BA\u8A8D"] }), (0, jsx_runtime_1.jsx)("div", { className: "space-y-3", children: validationItems.map((item, idx) => ((0, jsx_runtime_1.jsxs)("div", { className: "flex justify-between items-center text-sm", children: [(0, jsx_runtime_1.jsx)("span", { className: "text-slate-600", children: item.label }), item.ok ? ((0, jsx_runtime_1.jsx)("span", { className: "text-success font-bold", children: "\u5B8C\u4E86" })) : ((0, jsx_runtime_1.jsx)("span", { className: "text-danger font-bold", children: "\u672A\u5165\u529B" }))] }, idx))) })] })] }));
+};
+exports.default = OutputPage;
+//# sourceMappingURL=OutputPage.js.map
