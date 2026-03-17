@@ -7,8 +7,24 @@ const AIGenerator: React.FC = () => {
   const { setCurrentRegimen, regimens, setRegimens } = useRegimenStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [inputType, setInputType] = useState<'pdf' | 'online' | 'manual'>('pdf');
+  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState('');
+  const [text, setText] = useState('');
 
   const handleGenerate = () => {
+    if (inputType === 'pdf' && !file) {
+      alert('PDFファイルを選択してください。');
+      return;
+    }
+    if (inputType === 'online' && !url) {
+      alert('URLを入力してください。');
+      return;
+    }
+    if (inputType === 'manual' && !text) {
+      alert('テキストを入力してください。');
+      return;
+    }
+
     setIsGenerating(true);
     // Simulate AI generation delay
     setTimeout(() => {
@@ -68,6 +84,45 @@ const AIGenerator: React.FC = () => {
           <FileText size={24} />
           <span className="text-xs font-bold">手入力補助</span>
         </button>
+      </div>
+
+      <div className="mb-6 bg-white p-4 rounded-xl border border-blue-100 min-h-[120px] flex items-center justify-center">
+        {inputType === 'pdf' && (
+          <div className="flex flex-col gap-3 w-full">
+            <span className="text-sm font-bold text-slate-700">プロトコルやガイドラインのPDFを選択</span>
+            <input 
+              type="file" 
+              accept=".pdf" 
+              className="input text-sm p-3 border-dashed border-2 cursor-pointer
+                         file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
+                         file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+          </div>
+        )}
+        {inputType === 'online' && (
+          <div className="flex flex-col gap-3 w-full">
+            <span className="text-sm font-bold text-slate-700">ガイドライン等のWebページのURL</span>
+            <input 
+              type="url" 
+              className="input text-base" 
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
+        )}
+        {inputType === 'manual' && (
+          <div className="flex flex-col gap-3 w-full">
+            <span className="text-sm font-bold text-slate-700">レジメンのテキスト（薬剤名、用量など）</span>
+            <textarea 
+              className="input min-h-[100px] text-sm" 
+              placeholder="例: パクリタキセル 80mg/m2 day1,8,15..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
       <button 
