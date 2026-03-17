@@ -30,14 +30,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <header className="header glass h-auto py-3 px-4 md:px-6 flex flex-col xl:flex-row items-start xl:items-center justify-between border-b border-slate-200 sticky top-0 z-50 gap-3">
-        <div className="flex items-center gap-2 shrink-0">
+      <header className="header glass h-auto py-3 px-6 flex flex-row items-center justify-between border-b border-slate-200 sticky top-0 z-50">
+        <div className="flex items-center gap-2 shrink-0 pr-4">
           <div className="bg-blue-500 p-2 rounded-lg text-white shadow-sm">
             <FileText size={20} />
           </div>
           <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">抗癌剤レジメン作成</h1>
         </div>
-        <nav className="flex flex-nowrap overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 gap-1 md:gap-2 items-center text-sm font-medium">
+        <nav className="flex flex-nowrap overflow-x-auto gap-2 items-center text-sm font-medium">
           <button 
             className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'list' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setCurrentScreen('list')}
