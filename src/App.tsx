@@ -85,7 +85,7 @@ const App: React.FC = () => {
         </nav>
       </header>
 
-      <main className={currentScreen === 'course' ? 'w-full px-3 py-6' : 'container'}>
+      <main className={currentScreen === 'course' ? 'w-[85%] max-w-[1600px] mx-auto py-6' : 'container'}>
         {currentScreen === 'list' && (
           <DraftList onCreateNew={handleCreateNew} onSelect={() => setCurrentScreen('basic')} />
         )}

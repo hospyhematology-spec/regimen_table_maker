@@ -11,7 +11,7 @@ export function buildRegimenPrompt(url: string, extractedText: string): string {
    例) drug_name_display="リツキサン（リツキシマブ）", base_solution="生理食塩液 250mL"
 6. infusion_rateは必ず記載（PDFから抽出し、なければ日本添付文書の標準を補完）:
    主な標準例: リツキシマブ初回4時間以上/2回目以降90分 / パクリタキセル3時間 / カルボプラチン1時間 / シクロホスファミド30分 / ドキソルビシン静注 / ポラツズマブベドチン90分(初回)以降30分短縮可 / オビヌツズマブ初回Day1は25mg/h→後半50mg/h・2回目以降100mg/hから開始
-7. excel_display_hintに必ず投与日を記載（例: Day 1, Day 1・8・15, Day 1-5）。
+7. excel_display_hintに必ず投与日を「Day X」のみの形式で記載し、「投与XX分前」などの時間指定は当該薬剤のcomments（comment_type="時間指定"）に記載すること。
 8. groupsの最初（sort_order=0）に必ず「ダミー本体」グループ（生食100mL・点滴・1瓶・20mL/h）を追加すること。
 9. groupsは実際の投与順に並べる: ダミー本体 → 前投薬 → フラッシュ → 本体抗がん剤 → 後フラッシュ → 支持療法。
 10. 日本保険診療準拠の投与量・投与方法・コース間隔を正確に記載すること。

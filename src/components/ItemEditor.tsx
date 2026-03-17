@@ -15,7 +15,7 @@ const COMMENT_TYPES: CommentType[] = ['前投薬', '時間指定', '注意', '�
 
 // Grid column template - fits in ~1100px (10 of 12 columns)
 // handle | 薬剤名 | 希釈液 | 方法 | 用量 | 単位 | 速度 | 投与日 | delete
-const GRID = '18px 1.8fr 1.2fr 64px 80px 68px 80px 110px 28px';
+const GRID = '18px 2.4fr 0.6fr 64px 80px 68px 80px 110px 28px';
 
 const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items = [] }) => {
   const { addItem, deleteItem, updateItem, reorderItems } = useRegimenStore();

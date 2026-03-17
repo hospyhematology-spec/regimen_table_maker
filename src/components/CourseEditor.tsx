@@ -46,9 +46,9 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
 
       <div className="flex gap-3 w-full">
         {/* Sidebar: Course List – narrow */}
-        <div className="w-[140px] shrink-0 space-y-2 no-print">
+        <div className="w-[220px] shrink-0 space-y-2 no-print">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-slate-700 text-xs">コース一覧</h3>
+            <h3 className="font-bold text-slate-700 text-sm">コース一覧</h3>
             <button className="p-1 hover:bg-blue-50 text-blue-600 rounded" onClick={addCourse} title="コース追加">
               <Plus size={16} />
             </button>
@@ -57,25 +57,25 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
           {courses.map((course) => (
             <div
               key={course.course_id}
-              className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer border transition-all text-xs ${
+              className={`flex items-center justify-between px-2 py-2 rounded-lg cursor-pointer border transition-all text-sm ${
                 activeCourseId === course.course_id
                   ? 'bg-blue-600 border-blue-600 text-white'
                   : 'bg-white border-slate-200 hover:border-blue-400'
               }`}
               onClick={() => setActiveCourseId(course.course_id)}
             >
-              <span className="font-medium truncate text-[11px]">{course.course_name}</span>
-              <div className="flex gap-0.5 shrink-0">
+              <span className="font-medium truncate text-sm">{course.course_name}</span>
+              <div className="flex gap-1 shrink-0">
                 <button
-                  className={`p-0.5 rounded ${activeCourseId === course.course_id ? 'text-white/70 hover:text-white' : 'text-slate-400 hover:text-blue-500'}`}
+                  className={`p-1 rounded ${activeCourseId === course.course_id ? 'text-white/70 hover:text-white' : 'text-slate-400 hover:text-blue-500'}`}
                   onClick={e => { e.stopPropagation(); cloneCourse(course.course_id); }}
                   title="複製"
-                ><Copy size={11} /></button>
+                ><Copy size={14} /></button>
                 <button
-                  className={`p-0.5 rounded ${activeCourseId === course.course_id ? 'text-white/70 hover:text-white' : 'text-slate-400 hover:text-red-500'}`}
+                  className={`p-1 rounded ${activeCourseId === course.course_id ? 'text-white/70 hover:text-white' : 'text-slate-400 hover:text-red-500'}`}
                   onClick={e => { e.stopPropagation(); deleteCourse(course.course_id); }}
                   title="削除"
-                ><Trash2 size={11} /></button>
+                ><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
