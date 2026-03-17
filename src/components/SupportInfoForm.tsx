@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRegimenStore } from '../store';
-import { FileText, Info, AlertOctagon, Play, StopCircle, ArrowDownCircle, AlertCircle, Bookmark } from 'lucide-react';
+import { FileText, Info, AlertOctagon, Play, StopCircle, ArrowDownCircle, AlertCircle, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SupportInfoForm: React.FC = () => {
   const { currentRegimen, updateSupportInfo } = useRegimenStore();
+  const [openSection, setOpenSection] = useState<string>('basic_info');
 
   if (!currentRegimen) return null;
 
@@ -11,6 +12,16 @@ const SupportInfoForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateSupportInfo({ [e.target.name]: e.target.value });
+    // auto-resize
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  };
+
+  const adjustTextareaHeight = (element: HTMLTextAreaElement | null) => {
+    if (element) {
+      element.style.height = 'auto';
+      element.style.height = element.scrollHeight + 'px';
+    }
   };
 
   const sections = [
@@ -30,23 +41,42 @@ const SupportInfoForm: React.FC = () => {
         <h2 className="text-2xl font-bold text-slate-800">補完資料（Word出力用）</h2>
       </div>
 
-      <div className="space-y-6">
-        {sections.map((section) => (
-          <div key={section.id} className="card bg-white p-6 transition-shadow hover:shadow-md">
-            <div className="flex items-center gap-2 mb-3 text-blue-700 font-bold border-b border-slate-100 pb-2">
-              {section.icon}
-              <label htmlFor={section.id}>{section.label}</label>
+      <div className="space-y-4">
+        {sections.map((section) => {
+          const isOpen = openSection === section.id;
+          return (
+            <div key={section.id} className="card bg-white overflow-hidden transition-all duration-300 shadow-sm border border-slate-200">
+              <button
+                className={`w-full flex items-center justify-between p-4 ${isOpen ? 'bg-blue-50/50 border-b border-blue-100' : 'hover:bg-slate-50'}`}
+                onClick={() => setOpenSection(isOpen ? '' : section.id)}
+              >
+                <div className="flex items-center gap-3 text-blue-800 font-bold">
+                  <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                    {section.icon}
+                  </div>
+                  <span>{section.label}</span>
+                </div>
+                <div className="text-slate-400">
+                  {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </div>
+              </button>
+              
+              {isOpen && (
+                <div className="p-4 bg-slate-50/50">
+                  <textarea 
+                    id={section.id}
+                    name={section.id}
+                    ref={adjustTextareaHeight}
+                    className="w-full min-h-[150px] p-4 rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all resize-y text-slate-700 leading-relaxed"
+                    placeholder={section.placeholder}
+                    value={(info as any)[section.id]}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
             </div>
-            <textarea 
-              id={section.id}
-              name={section.id}
-              className="input min-h-[120px] bg-slate-50 border-none focus:bg-white transition-colors"
-              placeholder={section.placeholder}
-              value={(info as any)[section.id]}
-              onChange={handleChange}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
