@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useRegimenStore } from '../store';
-import { Regimen, GroupType, AdministrationMethod, DoseUnit, CommentType } from '../types';
-import { Sparkles, Upload, Globe, FileText, Loader2 } from 'lucide-react';
+import { Regimen, RegimenCore, RegimenSupportInfo, Course } from '../types';
+import { Sparkles, Upload, Globe, FileText, Loader2, Key } from 'lucide-react';
+import { extractTextFromPdf, callGeminiAPI } from '../gemini';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AIGeneratorProps {
@@ -14,14 +15,21 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (!apiKey) {
+      alert('Gemini API Keyを入力してください。');
+      return;
+    }
+    
     if (files.length === 0 && !url && !text) {
       alert('PDFファイル、URL、テキストのいずれかを入力してください。');
       return;
     }
 
     setIsGenerating(true);
+    localStorage.setItem('gemini_api_key', apiKey);
 
     const fileNames = files.map(f => f.name).join(', ');
     const sources = [
@@ -34,79 +42,105 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       files.length > 0 ? `・ファイル: ${fileNames}\n` : ''
     }${url ? `・Web: ${url}\n` : ''}${text ? `・手入力テキスト: あり\n\n${text}` : ''}`;
 
-    // Simulate AI generation delay
-    setTimeout(() => {
+    try {
+      let extractedText = text ? `【手入力テキスト】\n${text}\n\n` : '';
+      
+      for (const file of files) {
+        extractedText += `【PDF: ${file.name}】\n`;
+        const pdfText = await extractTextFromPdf(file);
+        extractedText += pdfText + '\n\n';
+      }
+
+      const prompt = `
+以下の情報は抗癌剤のガイドラインや添付文書です。これを読み取り、正確なレジメン（治療計画）を構成し、JSON形式で出力してください。血液がんや固形がんなど、書かれている病名や薬剤名を最優先で正確に抽出してください。PDFの内容にない薬剤は絶対に出力しないでください。
+
+[入力情報]
+URL参照: ${url}
+${extractedText}
+
+[出力JSONスキーマ（厳守・余計なマークダウンや説明は不要で純粋なJSONのみ出力）]
+{
+  "regimen_core": {
+    "regimen_name": "...",
+    "cancer_type": "...",
+    "treatment_purpose": "...",
+    "inpatient_outpatient": "入院 / 外来",
+    "interval_days": 21,
+    "reference_sources": "...",
+    "courses": [
+      {
+        "course_id": "必須（任意のUUID文字列）",
+        "course_name": "コース名",
+        "groups": [
+          {
+            "group_id": "必須",
+            "sort_order": 1,
+            "group_no": "1",
+            "group_name": "前投薬など",
+            "group_type": "前投薬 / 抗癌剤 / 支持療法 / 補液 / その他",
+            "items": [
+              {
+                "item_id": "必須",
+                "drug_name_display": "薬剤名",
+                "administration_method": "経口 / 静注 / 点滴 / 皮下注など",
+                "dose": "数字のみ",
+                "dose_unit": "mg/m2 / mg/body / mg/kg / AUCなど",
+                "base_solution": "溶解液など",
+                "schedule": { "repeat_pattern": "単回", "day_start": 1 },
+                "comments": [{ "comment_type": "時間指定", "text": "〜分かけて" }]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "regimen_support_info": {
+    "basic_info": "...",
+    "indications": "適応",
+    "contraindications": "禁忌",
+    "start_criteria": "開始基準",
+    "stop_criteria": "中止基準",
+    "dose_reduction": "減量・休薬基準",
+    "adverse_effects_and_management": "副作用"
+  }
+}
+`;
+
+      const responseText = await callGeminiAPI(apiKey, prompt);
+      const parsed = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+
       const generatedRegimen: Regimen = {
         schema_version: '1.0',
         app_version: '1.0.0',
         regimen_id: uuidv4(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        regimen_core: {
-          regimen_name: 'AI生成レジメン（サンプル）',
-          cancer_type: '胃癌（推測）',
-          treatment_purpose: '術後補助化学療法（推測）',
-          inpatient_outpatient: '外来',
-          interval_days: 21,
-          reference_sources: sources || 'AI連携モジュール（デモ）',
-          courses: [
-            {
-              course_id: uuidv4(),
-              course_name: 'メインコース（Day1）',
-              groups: [
-                {
-                  group_id: uuidv4(),
-                  sort_order: 1,
-                  group_no: '1',
-                  group_name: '前投薬',
-                  group_type: '前投薬' as GroupType,
-                  items: [
-                    {
-                      item_id: uuidv4(),
-                      drug_name_display: 'デキサメタゾン注射液',
-                      administration_method: '点滴' as AdministrationMethod,
-                      dose: '6.6',
-                      dose_unit: 'mg/body' as DoseUnit,
-                      base_solution: '生食50mL',
-                      schedule: { repeat_pattern: '単回', day_start: 1 },
-                      comments: [{ comment_type: '時間指定' as CommentType, text: '15分かけて' }]
-                    }
-                  ]
-                },
-                {
-                  group_id: uuidv4(),
-                  sort_order: 2,
-                  group_no: '2',
-                  group_name: '抗癌剤',
-                  group_type: '抗癌剤' as GroupType,
-                  items: [
-                    {
-                      item_id: uuidv4(),
-                      drug_name_display: 'パクリタキセル注射液',
-                      administration_method: '点滴' as AdministrationMethod,
-                      dose: '80',
-                      dose_unit: 'mg/m2' as DoseUnit,
-                      base_solution: '生食250mL',
-                      schedule: { repeat_pattern: '単回', day_start: 1 },
-                      comments: [{ comment_type: '時間指定' as CommentType, text: '1時間かけて投与' }]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        regimen_support_info: {
-          basic_info: basicInfo,
-          indications: '', contraindications: '', start_criteria: '', stop_criteria: '', dose_reduction: '', adverse_effects_and_management: '', references: ''
-        }
+        regimen_core: Object.assign({}, parsed.regimen_core, { reference_sources: sources }),
+        regimen_support_info: Object.assign({}, parsed.regimen_support_info, { basic_info: basicInfo + '\n' + (parsed.regimen_support_info?.basic_info || '') })
       };
+      
+      // Assign UUIDs if missing
+      generatedRegimen.regimen_core.courses?.forEach((c: any) => {
+        if (!c.course_id) c.course_id = uuidv4();
+        c.groups?.forEach((g: any) => {
+          if (!g.group_id) g.group_id = uuidv4();
+          g.items?.forEach((i: any) => {
+            if (!i.item_id) i.item_id = uuidv4();
+          });
+        });
+      });
+
       setRegimens([...regimens, generatedRegimen]);
       setCurrentRegimen(generatedRegimen);
       setIsGenerating(false);
-      alert('AIによるレジメンの仮作成が完了しました。\n続けて「基本情報」「コース・施行順」の各画面で内容を確認し、修正してください。');
+      alert('AIによるレジメンの生成が完了しました！内容を確認してください。');
       onSelect();
-    }, 2000);
+    } catch (err: any) {
+      console.error(err);
+      alert('AI生成に失敗しました: ' + err.message);
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -117,6 +151,21 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       </div>
 
       <div className="flex flex-col gap-4 mb-6">
+        <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-yellow-800 font-bold">
+            <Key size={18} />
+            <span className="text-sm">Gemini API Key (必須)</span>
+          </div>
+          <input 
+            type="password" 
+            className="input text-sm" 
+            placeholder="AI処理に必須（API Keyを入力）"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <p className="text-[10px] text-yellow-700">ブラウザ内に保存されます。データは直接Googleのサーバーにのみ送信されます。</p>
+        </div>
+
         <div className="bg-white p-4 rounded-xl border border-blue-100 flex flex-col gap-3">
           <div className="flex items-center gap-2 text-blue-700 font-bold mb-1">
             <Upload size={18} />
@@ -180,7 +229,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         )}
       </button>
       <p className="mt-4 text-[10px] text-slate-400 text-center">
-        ※プロトタイプ版ではシミュレーション動作となります。
+        ※ 実際のPDF内容やURLを入力して正確なAI解析を実行します。（ネット環境が必要です）
       </p>
     </div>
   );
