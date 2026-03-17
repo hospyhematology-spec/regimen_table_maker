@@ -52,50 +52,64 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       }
 
       const prompt = `
-あなたは優秀な医療AIアシスタントです。以下の提供された情報（PDF抽出テキスト、URL参照、手入力）を読み取り、正確な抗癌剤レジメン（治療計画）を構成し、必ず以下のJSONスキーマ形式のみで出力してください。
+あなたは日本の抗がん剤専門医療AIアシスタントです。以下の提供情報（PDF抽出テキスト・URL・手入力）を最優先で参照し、さらに日本国内の添付文書・薬事承認情報・保険適用ルールの知識を活用して、正確な抗癌剤レジメン（治療計画）をJSONで生成してください。
 
-【重要ルール】
-- 優先順位は [1]PDF抽出テキスト、[2]URL情報、[3]手入力テキスト ですが、**情報が不足している場合（特に「前投薬」や「希釈液・溶解液などの本体」）については、あなたが持つ最新の一般的な医療知識・添付文書情報に基づいて補完してください。**
-- 点滴製剤の場合、希釈液（本体としての生食や5%ブドウ糖液など）は、抗がん剤と同じItem（行）のbase_solutionに含めるのではなく、**必ず抗がん剤の次の行に、独立した1つの「薬剤（item）」として追加してください。**（例: item_1がパクリタキセルなら、item_2に生食500mL等と分けて記述する）
-- 用量(dose)には単位を含めず、数値のみを出力してください（例: 80 や 500）。単位はdose_unitに指定。
-- 速度(infusion_rate)や投与時間も確実に抽出し、数値と単位（例: 90分、2時間など）を出力してください。
-- 血液がんや特定の病名が記載されている場合は、それを絶対に見逃さずに記載してください。
-- 以下の仕様に厳密に沿ったJSONのみを出力してください。マークダウン( \`\`\`json 等 )や前後の説明文は一切加えないでください。
+【絶対ルール】
+1. 提供データ優先順位: [1]PDF抽出テキスト → [2]URL情報 → [3]手入力 → [4]知識補完（日本の添付文書・ガイドライン）
+2. 疾患名・薬剤名は提供データから正確に引用。捏造・類似薬への置換は禁止。
+3. 薬剤名は「一般名（商品名）」形式（例: ポラツズマブベドチン（ポライビー）、リツキシマブ（リツキサン））。
+4. dose=数値のみ（単位なし）、単位はdose_unitへ（例: dose=375, dose_unit=mg/m2）。
+5. 点滴製剤の希釈液は抗がん剤と別の独立したitem行として必ず追加すること。
+   例) item①リツキシマブ → item②生理食塩液250mL（dose=250, dose_unit=mL, administration_method=点滴）
+6. infusion_rateは必ず記載（PDFから抽出し、なければ日本添付文書の標準を補完）:
+   主な標準例: リツキシマブ初回4時間以上/2回目以降90分 / パクリタキセル3時間 / カルボプラチン1時間 / シクロホスファミド30分 / ドキソルビシン静注 / ポラツズマブベドチン90分（初回）以降30分短縮可 / オビヌツズマブ初回日1は25mg/h→後半50mg/h・2回目以降100mg/hから開始
+7. excel_display_hintに必ず投与日を記載（例: Day 1, Day 1・8・15, Day 1-5）。
+8. groupsは実際の投与順に並べる: 前投薬 → フラッシュ → 本体抗がん剤 → 後フラッシュ → 支持療法。
+9. 日本保険診療準拠の投与量・投与方法・コース間隔を正確に記載すること。
+10. regimen_support_info全項目を日本の添付文書・ガイドライン（JSCO・日本血液学会・NCCN日本版等）に基づき詳細記載。
+11. 出力は純粋なJSONのみ。マークダウン記号・説明文は一切含めないこと。
 
 [入力情報]
 URL参照: ${url}
 ${extractedText}
 
-[出力JSONデータ定義と制約]
+[出力JSONスキーマ（厳守）]
 {
   "regimen_core": {
-    "regimen_name": "抽出したレジメン名",
-    "cancer_type": "抽出した癌腫・疾患名（捏造禁止！）",
-    "treatment_purpose": "治療目的（術前/術後/進行再発など）",
-    "inpatient_outpatient": "入院 / 外来 のいずれか",
-    "interval_days": 数値（1コースの日数 例: 21）,
-    "reference_sources": "出典情報",
+    "regimen_name": "正式レジメン名（例: Pola-BR療法、R-CHOP療法）",
+    "cancer_type": "日本保険病名準拠の疾患名（例: びまん性大細胞型B細胞リンパ腫）",
+    "treatment_purpose": "治療目的（例: 再発難治、一次治療、寛解導入）",
+    "inpatient_outpatient": "入院 または 外来",
+    "interval_days": 21,
+    "reference_sources": "添付文書・ガイドライン名・論文",
     "courses": [
       {
-        "course_id": "必須（一意のUUID文字列を生成）",
-        "course_name": "コース名（例: 本コース）",
+        "course_id": "生成UUID",
+        "course_name": "本コース",
         "groups": [
           {
-            "group_id": "必須（一意のUUID）",
+            "group_id": "生成UUID",
             "sort_order": 1,
             "group_no": "1",
-            "group_name": "グループ名（前投薬など）",
-            "group_type": "前投薬 / 抗癌剤 / 支持療法 / 補液 / その他 のいずれか",
+            "group_name": "グループ名（例: 前投薬、リツキシマブ、CHOP本体）",
+            "group_type": "前投薬 または 抗癌剤 または 支持療法 または フラッシュ または 経口 または 補液 または その他",
             "items": [
               {
-                "item_id": "必須（一意のUUID）",
-                "drug_name_display": "薬剤の一般名（商品名）形式。希釈液（生食500mLなど）も1つの独立した薬剤として出力すること！",
-                "administration_method": "経口 / 静注 / 点滴 / 皮下注 / 筋注 / 髄注 のいずれか",
-                "dose": "投与量の数値のみ（例: 80 や 500）",
-                "dose_unit": "mg/kg / mg/m2 / mg/body / AUC / units/m2 / IU/m2 / IU/kg / mL / 瓶 / 錠 / カプセル / 手入力 のいずれか",
-                "infusion_rate": "速度・時間（例: 90分 や 2時間 や 全開滴下 など。必ず情報や知識から抽出すること）",
-                "schedule": { "repeat_pattern": "単回 / 連日 / 指定日 / 毎週 のいずれか", "day_start": 1, "excel_display_hint": "投与日（例: Day 1, 8, 15 や Day 1-5。必ず数値等を入力すること）" },
-                "comments": [{ "comment_type": "前投薬 / 時間指定 / 注意 / 運用 / 任意 のいずれか", "text": "注意事項等" }]
+                "item_id": "生成UUID",
+                "drug_name_display": "一般名（商品名）形式。希釈液も独立item（例: 生理食塩液250mL）",
+                "administration_method": "経口 または 静注 または 点滴 または 皮下注 または 筋注 または 髄注",
+                "dose": "数値のみ",
+                "dose_unit": "mg/kg または mg/m2 または mg/body または AUC または mL または 錠 または カプセル または 瓶 または 手入力",
+                "infusion_rate": "投与時間（例: 30分、90分、3時間、全開滴下）必須記載",
+                "schedule": {
+                  "repeat_pattern": "単回 または 連日 または 指定日 または 毎週",
+                  "day_start": 1,
+                  "excel_display_hint": "投与日（例: Day 1, Day 1・8・15, Day 1-5）"
+                },
+                "comments": [{
+                  "comment_type": "前投薬 または 時間指定 または 注意 または 運用 または 任意",
+                  "text": "注意事項・補足（例: アレルギー反応出現時は速度を落とすか中止）"
+                }]
               }
             ]
           }
@@ -104,14 +118,14 @@ ${extractedText}
     ]
   },
   "regimen_support_info": {
-    "basic_info": "基本情報など",
-    "indications": "適応症",
-    "contraindications": "禁忌",
-    "start_criteria": "投与開始基準",
-    "stop_criteria": "中止基準",
-    "dose_reduction": "減量・休薬基準",
-    "adverse_effects_and_management": "副作用と対策",
-    "references": "参考資料"
+    "basic_info": "レジメン概要・エビデンス（試験名・主要論文・奏効率等）",
+    "indications": "日本国内承認の保険適用適応症（添付文書準拠）",
+    "contraindications": "禁忌事項（日本添付文書準拠: 過敏症・妊娠・重篤な臓器障害等）",
+    "start_criteria": "投与開始基準（PS・血液検査値・臓器機能など定量的基準）",
+    "stop_criteria": "投与中止・延期基準（CTCAEグレードや具体的な閾値）",
+    "dose_reduction": "減量・休薬基準（グレードと対応する投与量の変更方法）",
+    "adverse_effects_and_management": "主な副作用と対処法（発生頻度・グレード・具体的な対処を含む）",
+    "references": "参考文献（日本の添付文書・JSCO・日本血液学会ガイドライン・主要論文）"
   }
 }
 `;
