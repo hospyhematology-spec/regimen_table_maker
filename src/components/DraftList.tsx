@@ -26,10 +26,12 @@ const DraftList: React.FC<DraftListProps> = ({ onCreateNew, onSelect }) => {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('この下書きを削除しますか？')) {
       const newRegimens = regimens.filter((r: any) => r.regimen_id !== id);
       setRegimens(newRegimens);
+      const { deleteRegimenFromDB } = await import('../db');
+      await deleteRegimenFromDB(id);
     }
   };
 
@@ -62,12 +64,34 @@ const DraftList: React.FC<DraftListProps> = ({ onCreateNew, onSelect }) => {
         </div>
       </div>
 
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8 text-slate-700">
+        <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+          <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">i</span>
+          アプリの使い方
+        </h3>
+        <p className="text-sm mb-4 leading-relaxed">
+          このアプリは、レジメンデータをExcelや独自形式の辞書などに手作業で起こす手間を削減するために作られました。<br/>
+          以下のいずれかの方法で作業をスタートしてください：
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-lg border border-slate-200">
+            <h4 className="font-bold text-blue-700 mb-2">A: AIに自動生成させる（おすすめ）</h4>
+            <p className="text-xs text-slate-600">右側のパネルからPDFやURLを入力し、「AIで構築」ボタンを押してください。<br/>自動で仮のレジメン骨格が作成され、STEP2へと進みます。</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-slate-200">
+            <h4 className="font-bold text-blue-700 mb-2">B: ゼロから手動で作成する</h4>
+            <p className="text-xs text-slate-600">右上の「新規作成」ボタンを押してください。空のひな形が作成され、STEP2へと進みます。</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {regimens.length === 0 ? (
-              <div className="col-span-full py-20 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
-                下書きがありません。新規作成またはJSONを読み込んでください。
+              <div className="col-span-full py-16 text-center text-slate-500 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50">
+                <p className="mb-2">まだ保存されたデータ（下書き）はありません。</p>
+                <p className="text-sm">上の「新規作成」ボタン、または右側の「AI自動生成」から始めてください。</p>
               </div>
             ) : (
               [...regimens].sort((a: any, b: any) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).map((regimen: any) => (
@@ -119,7 +143,7 @@ const DraftList: React.FC<DraftListProps> = ({ onCreateNew, onSelect }) => {
         </div>
         
         <div className="col-span-4">
-          <AIGenerator />
+          <AIGenerator onSelect={onSelect} />
         </div>
       </div>
     </div>

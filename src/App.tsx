@@ -30,41 +30,52 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <header className="header glass">
-        <div className="flex items-center gap-2 mr-8">
-          <FileText className="text-blue-600" />
-          <h1 className="text-xl font-bold">抗癌剤レジメン作成</h1>
+      <header className="header glass h-auto py-3 px-6 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-200 sticky top-0 z-50">
+        <div className="flex items-center gap-2 mb-3 md:mb-0">
+          <div className="bg-blue-500 p-2 rounded-lg text-white shadow-sm">
+            <FileText size={20} />
+          </div>
+          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">抗癌剤レジメン作成</h1>
         </div>
-        <nav className="flex gap-4">
+        <nav className="flex flex-wrap gap-1 md:gap-2 items-center text-sm font-medium">
           <button 
-            className={`nav-link ${currentScreen === 'list' ? 'active' : ''}`}
+            className={`flex flex-col items-center px-4 py-2 rounded-lg transition-all ${currentScreen === 'list' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => setCurrentScreen('list')}
           >
-            <List size={18} className="inline mr-1" /> 下書き一覧
+            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 1</span>
+            <span className="flex items-center"><List size={14} className="mr-1" /> 下書き選択</span>
           </button>
+          <div className="text-slate-300 hidden md:block">›</div>
           <button 
-            className={`nav-link ${currentScreen === 'basic' ? 'active' : ''}`}
+            className={`flex flex-col items-center px-4 py-2 rounded-lg transition-all ${currentScreen === 'basic' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => navigateTo('basic')}
           >
-            基本情報
+            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 2</span>
+            <span>基本情報</span>
           </button>
+          <div className="text-slate-300 hidden md:block">›</div>
           <button 
-            className={`nav-link ${currentScreen === 'course' ? 'active' : ''}`}
+            className={`flex flex-col items-center px-4 py-2 rounded-lg transition-all ${currentScreen === 'course' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => navigateTo('course')}
           >
-            コース・施行順
+            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 3</span>
+            <span>コース・編成</span>
           </button>
+          <div className="text-slate-300 hidden md:block">›</div>
           <button 
-            className={`nav-link ${currentScreen === 'support' ? 'active' : ''}`}
+            className={`flex flex-col items-center px-4 py-2 rounded-lg transition-all ${currentScreen === 'support' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => navigateTo('support')}
           >
-            補完資料
+            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 4</span>
+            <span>補完資料</span>
           </button>
+          <div className="text-slate-300 hidden md:block">›</div>
           <button 
-            className={`nav-link ${currentScreen === 'output' ? 'active' : ''}`}
+            className={`flex flex-col items-center px-4 py-2 rounded-lg transition-all ${currentScreen === 'output' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
             onClick={() => navigateTo('output')}
           >
-            <Download size={18} className="inline mr-1" /> 出力
+            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 5</span>
+            <span className="flex items-center"><Download size={14} className="mr-1" /> 出力</span>
           </button>
         </nav>
       </header>
