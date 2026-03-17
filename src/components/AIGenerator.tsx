@@ -52,42 +52,49 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       }
 
       const prompt = `
-以下の情報は抗癌剤のガイドラインや添付文書です。これを読み取り、正確なレジメン（治療計画）を構成し、JSON形式で出力してください。血液がんや固形がんなど、書かれている病名や薬剤名を最優先で正確に抽出してください。PDFの内容にない薬剤は絶対に出力しないでください。
+あなたは優秀な医療AIアシスタントです。以下の提供された情報（PDF抽出テキスト、URL参照、手入力）を【最優先で】読み取り、正確な抗癌剤レジメン（治療計画）を構成し、必ず以下のJSONスキーマ形式のみで出力してください。
+
+【重要ルール】
+- 優先順位は [1]PDF抽出テキスト、[2]URL情報、[3]手入力テキスト です。
+- 提供されたテキストに存在しない病名（「胃癌」など）や、存在しない薬剤名（「パクリタキセル」など）を決して捏造しないでください。
+- PDFに記載がないデータは無理に埋めず、空文字("")にしてください。
+- 血液がんや特定の病名が記載されている場合は、それを絶対に見逃さずに記載してください。
+- 以下の仕様に厳密に沿ったJSONのみを出力してください。マークダウン( \`\`\`json 等 )や前後の説明文は一切加えないでください。
 
 [入力情報]
 URL参照: ${url}
 ${extractedText}
 
-[出力JSONスキーマ（厳守・余計なマークダウンや説明は不要で純粋なJSONのみ出力）]
+[出力JSONデータ定義と制約]
 {
   "regimen_core": {
-    "regimen_name": "...",
-    "cancer_type": "...",
-    "treatment_purpose": "...",
-    "inpatient_outpatient": "入院 / 外来",
-    "interval_days": 21,
-    "reference_sources": "...",
+    "regimen_name": "抽出したレジメン名",
+    "cancer_type": "抽出した癌腫・疾患名（捏造禁止！）",
+    "treatment_purpose": "治療目的（術前/術後/進行再発など）",
+    "inpatient_outpatient": "入院 / 外来 のいずれか",
+    "interval_days": 数値（1コースの日数 例: 21）,
+    "reference_sources": "出典情報",
     "courses": [
       {
-        "course_id": "必須（任意のUUID文字列）",
-        "course_name": "コース名",
+        "course_id": "必須（一意のUUID文字列を生成）",
+        "course_name": "コース名（例: 本コース）",
         "groups": [
           {
-            "group_id": "必須",
+            "group_id": "必須（一意のUUID）",
             "sort_order": 1,
             "group_no": "1",
-            "group_name": "前投薬など",
-            "group_type": "前投薬 / 抗癌剤 / 支持療法 / 補液 / その他",
+            "group_name": "グループ名（前投薬など）",
+            "group_type": "前投薬 / 抗癌剤 / 支持療法 / 補液 / その他 のいずれか",
             "items": [
               {
-                "item_id": "必須",
-                "drug_name_display": "薬剤名",
-                "administration_method": "経口 / 静注 / 点滴 / 皮下注など",
-                "dose": "数字のみ",
-                "dose_unit": "mg/m2 / mg/body / mg/kg / AUCなど",
-                "base_solution": "溶解液など",
-                "schedule": { "repeat_pattern": "単回", "day_start": 1 },
-                "comments": [{ "comment_type": "時間指定", "text": "〜分かけて" }]
+                "item_id": "必須（一意のUUID）",
+                "drug_name_display": "薬剤の一般名（商品名）形式。PDF内の薬剤のみ記載すること！",
+                "administration_method": "経口 / 静注 / 点滴 / 皮下注 / 筋注 / 髄注 のいずれか",
+                "dose": "投与量（数字や文字列）",
+                "dose_unit": "mg/kg / mg/m2 / mg/body / AUC / units/m2 / IU/m2 / IU/kg / 手入力 のいずれか",
+                "base_solution": "生食100mL / 生食250mL / 生食500mL / 5%ブドウ糖液100mL / 5%ブドウ糖液250mL / 5%ブドウ糖液500mL 等",
+                "schedule": { "repeat_pattern": "単回 / 連日 / 指定日 / 毎週 のいずれか", "day_start": 1 },
+                "comments": [{ "comment_type": "前投薬 / 時間指定 / 注意 / 運用 / 任意 のいずれか", "text": "〜分かけて など" }]
               }
             ]
           }
@@ -96,13 +103,14 @@ ${extractedText}
     ]
   },
   "regimen_support_info": {
-    "basic_info": "...",
-    "indications": "適応",
+    "basic_info": "基本情報など",
+    "indications": "適応症",
     "contraindications": "禁忌",
-    "start_criteria": "開始基準",
+    "start_criteria": "投与開始基準",
     "stop_criteria": "中止基準",
     "dose_reduction": "減量・休薬基準",
-    "adverse_effects_and_management": "副作用"
+    "adverse_effects_and_management": "副作用と対策",
+    "references": "参考資料"
   }
 }
 `;
