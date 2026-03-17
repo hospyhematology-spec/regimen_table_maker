@@ -84,9 +84,9 @@ const App: React.FC = () => {
         {currentScreen === 'list' && (
           <DraftList onCreateNew={handleCreateNew} onSelect={() => setCurrentScreen('basic')} />
         )}
-        {currentScreen === 'basic' && currentRegimen && <BasicInfoForm />}
-        {currentScreen === 'course' && currentRegimen && <CourseEditor />}
-        {currentScreen === 'support' && currentRegimen && <SupportInfoForm />}
+        {currentScreen === 'basic' && currentRegimen && <BasicInfoForm onNext={() => navigateTo('course')} />}
+        {currentScreen === 'course' && currentRegimen && <CourseEditor onNext={() => navigateTo('support')} />}
+        {currentScreen === 'support' && currentRegimen && <SupportInfoForm onNext={() => navigateTo('output')} />}
         {currentScreen === 'output' && currentRegimen && <OutputPage />}
       </main>
     </div>

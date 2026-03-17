@@ -3,7 +3,11 @@ import { useRegimenStore } from '../store';
 import { Plus, ChevronRight, ChevronDown, Trash2, Copy, GripVertical, Settings2 } from 'lucide-react';
 import GroupEditor from './GroupEditor';
 
-const CourseEditor: React.FC = () => {
+interface CourseEditorProps {
+  onNext?: () => void;
+}
+
+const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
   const { currentRegimen, addCourse, cloneCourse, deleteCourse, updateCourse } = useRegimenStore();
   const courses = currentRegimen?.regimen_core?.courses || [];
   const [activeCourseId, setActiveCourseId] = useState<string | null>(
@@ -95,6 +99,17 @@ const CourseEditor: React.FC = () => {
         ) : (
           <div className="card h-[400px] flex items-center justify-center text-slate-400">
             左側のリストからコースを選択してください
+          </div>
+        )}
+
+        {onNext && (
+          <div className="flex justify-end pt-4 border-t border-slate-200 mt-6">
+            <button 
+              className="btn btn-primary flex items-center gap-2 px-8 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+              onClick={onNext}
+            >
+              次へ進む (STEP 4) <ChevronRight size={20} />
+            </button>
           </div>
         )}
       </div>

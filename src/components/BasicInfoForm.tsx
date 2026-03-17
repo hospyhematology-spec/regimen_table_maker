@@ -1,7 +1,12 @@
 import React from 'react';
 import { useRegimenStore } from '../store';
+import { ChevronRight } from 'lucide-react';
 
-const BasicInfoForm: React.FC = () => {
+interface BasicInfoFormProps {
+  onNext?: () => void;
+}
+
+const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onNext }) => {
   const { currentRegimen, updateRegimenCore } = useRegimenStore();
 
   if (!currentRegimen) return null;
@@ -95,6 +100,17 @@ const BasicInfoForm: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {onNext && (
+        <div className="flex justify-end pt-4">
+          <button 
+            className="btn btn-primary flex items-center gap-2 px-8 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+            onClick={onNext}
+          >
+            次へ進む (STEP 3) <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

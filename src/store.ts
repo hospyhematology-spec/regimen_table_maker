@@ -26,6 +26,7 @@ interface RegimenState {
   addItem: (courseId: string, groupId: string) => void;
   deleteItem: (courseId: string, groupId: string, itemId: string) => void;
   updateItem: (courseId: string, groupId: string, itemId: string, updates: Partial<Item>) => void;
+  reorderItems: (courseId: string, groupId: string, items: Item[]) => void;
 }
 
 const createInitialRegimen = (): Regimen => ({
@@ -315,6 +316,29 @@ export const useRegimenStore = create<RegimenState>((set) => ({
             groups: c.groups.map(g => g.group_id === groupId ? {
               ...g,
               items: g.items.map(i => i.item_id === itemId ? { ...i, ...updates } : i)
+            } : g)
+          } : c
+        )
+      }
+    };
+    return {
+      currentRegimen: updated,
+      regimens: state.regimens.map(r => r.regimen_id === updated.regimen_id ? updated : r)
+    };
+  }),
+
+  reorderItems: (courseId, groupId, items) => set((state) => {
+    if (!state.currentRegimen) return state;
+    const updated = {
+      ...state.currentRegimen,
+      regimen_core: {
+        ...state.currentRegimen.regimen_core,
+        courses: state.currentRegimen.regimen_core.courses.map(c => 
+          c.course_id === courseId ? {
+            ...c,
+            groups: c.groups.map(g => g.group_id === groupId ? {
+              ...g,
+              items
             } : g)
           } : c
         )

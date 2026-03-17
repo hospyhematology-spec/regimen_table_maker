@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRegimenStore } from '../store';
 import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { Group } from '../types';
@@ -11,6 +11,7 @@ interface GroupEditorProps {
 
 const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups = [] }) => {
   const { addGroup, deleteGroup, updateGroup, reorderGroups } = useRegimenStore();
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const safeGroups = groups || [];
 
   const handleMove = (index: number, direction: 'up' | 'down') => {
@@ -30,7 +31,35 @@ const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups = [] }) => {
   return (
     <div className="space-y-6">
       {[...safeGroups].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((group, index) => (
-        <div key={group.group_id} className="card p-0 overflow-hidden border-slate-200">
+        <div 
+          key={group.group_id} 
+          className={`card p-0 overflow-hidden border-slate-200 ${draggedIndex === index ? 'opacity-50' : ''}`}
+          draggable
+          onDragStart={(e) => {
+            // Needed for Firefox
+            if (e.dataTransfer) {
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', index.toString());
+            }
+            setDraggedIndex(index);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (draggedIndex !== null && draggedIndex !== index) {
+              const newGroups = [...safeGroups].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+              const [removed] = newGroups.splice(draggedIndex, 1);
+              newGroups.splice(index, 0, removed);
+              const updated = newGroups.map((g, i) => ({ ...g, sort_order: i }));
+              reorderGroups(courseId, updated);
+            }
+            setDraggedIndex(null);
+          }}
+          onDragEnd={() => setDraggedIndex(null)}
+        >
           <div className="bg-slate-50 border-bottom border-slate-200 p-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="cursor-grab text-slate-400">

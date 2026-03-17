@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRegimenStore } from '../store';
-import { FileText, Info, AlertOctagon, Play, StopCircle, ArrowDownCircle, AlertCircle, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Info, AlertOctagon, Play, StopCircle, ArrowDownCircle, AlertCircle, Bookmark, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 
-const SupportInfoForm: React.FC = () => {
+interface SupportInfoFormProps {
+  onNext?: () => void;
+}
+
+const SupportInfoForm: React.FC<SupportInfoFormProps> = ({ onNext }) => {
   const { currentRegimen, updateSupportInfo } = useRegimenStore();
   const [openSection, setOpenSection] = useState<string>('basic_info');
 
@@ -78,6 +82,17 @@ const SupportInfoForm: React.FC = () => {
           );
         })}
       </div>
+
+      {onNext && (
+        <div className="flex justify-end pt-4">
+          <button 
+            className="btn btn-primary flex items-center gap-2 px-8 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+            onClick={onNext}
+          >
+            次へ進む (STEP 5 出力) <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
