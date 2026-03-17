@@ -7,12 +7,12 @@ const AIGenerator: React.FC = () => {
   const { setCurrentRegimen, regimens, setRegimens } = useRegimenStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [inputType, setInputType] = useState<'pdf' | 'online' | 'manual'>('pdf');
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
 
   const handleGenerate = () => {
-    if (inputType === 'pdf' && !file) {
+    if (inputType === 'pdf' && files.length === 0) {
       alert('PDFファイルを選択してください。');
       return;
     }
@@ -89,15 +89,21 @@ const AIGenerator: React.FC = () => {
       <div className="mb-6 bg-white p-4 rounded-xl border border-blue-100 min-h-[120px] flex items-center justify-center">
         {inputType === 'pdf' && (
           <div className="flex flex-col gap-3 w-full">
-            <span className="text-sm font-bold text-slate-700">プロトコルやガイドラインのPDFを選択</span>
+            <span className="text-sm font-bold text-slate-700">プロトコルやガイドラインのPDFを選択（複数選択可）</span>
             <input 
               type="file" 
               accept=".pdf" 
+              multiple
               className="input text-sm p-3 border-dashed border-2 cursor-pointer
                          file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
                          file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => setFiles(Array.from(e.target.files || []))}
             />
+            {files.length > 0 && (
+              <div className="text-xs text-slate-500">
+                {files.length} ファイル選択中
+              </div>
+            )}
           </div>
         )}
         {inputType === 'online' && (
