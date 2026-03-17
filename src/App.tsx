@@ -43,40 +43,45 @@ const App: React.FC = () => {
             onClick={() => setCurrentScreen('list')}
           >
             <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 1</span>
-            <span className="flex items-center"><List size={14} className="mr-1" /> 下書き選択</span>
+            <span className="flex items-center"><List size={14} className="mr-1" /> はじめに</span>
           </button>
-          <div className="text-slate-300 hidden md:block shrink-0">›</div>
-          <button 
-            className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'basic' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
-            onClick={() => navigateTo('basic')}
-          >
-            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 2</span>
-            <span>基本情報</span>
-          </button>
-          <div className="text-slate-300 hidden md:block shrink-0">›</div>
-          <button 
-            className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'course' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
-            onClick={() => navigateTo('course')}
-          >
-            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 3</span>
-            <span>コース・編成</span>
-          </button>
-          <div className="text-slate-300 hidden md:block shrink-0">›</div>
-          <button 
-            className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'support' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
-            onClick={() => navigateTo('support')}
-          >
-            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 4</span>
-            <span>補完資料</span>
-          </button>
-          <div className="text-slate-300 hidden md:block shrink-0">›</div>
-          <button 
-            className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'output' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
-            onClick={() => navigateTo('output')}
-          >
-            <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 5</span>
-            <span className="flex items-center"><Download size={14} className="mr-1" /> 出力</span>
-          </button>
+          
+          {currentRegimen && (
+            <>
+              <div className="text-slate-300 hidden md:block shrink-0">›</div>
+              <button 
+                className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'basic' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
+                onClick={() => navigateTo('basic')}
+              >
+                <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 2</span>
+                <span>基本情報</span>
+              </button>
+              <div className="text-slate-300 hidden md:block shrink-0">›</div>
+              <button 
+                className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'course' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
+                onClick={() => navigateTo('course')}
+              >
+                <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 3</span>
+                <span>コース・編成</span>
+              </button>
+              <div className="text-slate-300 hidden md:block shrink-0">›</div>
+              <button 
+                className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'support' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
+                onClick={() => navigateTo('support')}
+              >
+                <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 4</span>
+                <span>補完資料</span>
+              </button>
+              <div className="text-slate-300 hidden md:block shrink-0">›</div>
+              <button 
+                className={`flex flex-col items-center shrink-0 px-3 md:px-4 py-2 rounded-lg transition-all ${currentScreen === 'output' ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}
+                onClick={() => navigateTo('output')}
+              >
+                <span className="text-[10px] font-black tracking-wider text-blue-500 mb-0.5 opacity-80 text-center">STEP 5</span>
+                <span className="flex items-center"><Download size={14} className="mr-1" /> 出力</span>
+              </button>
+            </>
+          )}
         </nav>
       </header>
 
