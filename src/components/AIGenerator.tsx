@@ -152,9 +152,22 @@ ${extractedText}
 
       <div className="flex flex-col gap-4 mb-6">
         <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-yellow-800 font-bold">
-            <Key size={18} />
-            <span className="text-sm">Gemini API Key (必須)</span>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-yellow-800 font-bold">
+              <Key size={18} />
+              <span className="text-sm">Gemini API Key (必須)</span>
+            </div>
+            {apiKey && (
+              <button 
+                className="text-xs text-yellow-700 underline hover:text-yellow-600"
+                onClick={() => {
+                  setApiKey('');
+                  localStorage.removeItem('gemini_api_key');
+                }}
+              >
+                クリア(削除)
+              </button>
+            )}
           </div>
           <input 
             type="password" 
@@ -163,7 +176,15 @@ ${extractedText}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
           />
-          <p className="text-[10px] text-yellow-700">ブラウザ内に保存されます。データは直接Googleのサーバーにのみ送信されます。</p>
+          <div className="text-[10px] text-yellow-700 mt-1 leading-relaxed">
+            <p className="font-bold border-b border-yellow-200 pb-1 mb-1">【セキュリティについて】</p>
+            <ul className="list-disc pl-3">
+              <li>入力したAPI Keyは、お使いの<b>ブラウザ内部（お使いのPCのみ）</b>に保存されます。</li>
+              <li>当アプリの開発者や他の利用者にKeyが漏れることは<b>絶対にありません</b>。</li>
+              <li>データはご自身のPCから直接、Googleのサーバー（Gemini API）のみ送信されます。</li>
+              <li>使い終わったら右上の「クリア(削除)」からKeyを安全に消去できます。</li>
+            </ul>
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-blue-100 flex flex-col gap-3">
