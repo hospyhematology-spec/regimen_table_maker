@@ -163,15 +163,8 @@ const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items = [] }
             </div>
           </div>
 
-          {/* Bottom Row: Base Solution / Comments */}
-          <div className="flex items-center gap-2 pl-6">
-             <input 
-                type="text"
-                className="input text-[11px] bg-white w-40 h-[28px] py-1"
-                value={item.base_solution || ''}
-                onChange={(e) => handleUpdate(item.item_id, { base_solution: e.target.value })}
-                placeholder="希釈液 (例: 生食500mL)"
-              />
+          {/* Bottom Row: Comments */}
+          <div className="flex items-center pl-6">
               <input 
                 type="text"
                 className="input text-[11px] bg-white flex-1 h-[28px] py-1"
