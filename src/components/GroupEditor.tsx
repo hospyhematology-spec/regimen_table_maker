@@ -9,11 +9,12 @@ interface GroupEditorProps {
   groups: Group[];
 }
 
-const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups }) => {
+const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups = [] }) => {
   const { addGroup, deleteGroup, updateGroup, reorderGroups } = useRegimenStore();
+  const safeGroups = groups || [];
 
   const handleMove = (index: number, direction: 'up' | 'down') => {
-    const newGroups = [...groups].sort((a, b) => a.sort_order - b.sort_order);
+    const newGroups = [...safeGroups].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newGroups.length) return;
 
@@ -28,7 +29,7 @@ const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups }) => {
 
   return (
     <div className="space-y-6">
-      {[...groups].sort((a, b) => a.sort_order - b.sort_order).map((group, index) => (
+      {[...safeGroups].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((group, index) => (
         <div key={group.group_id} className="card p-0 overflow-hidden border-slate-200">
           <div className="bg-slate-50 border-bottom border-slate-200 p-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -72,7 +73,7 @@ const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups }) => {
               <button 
                 className="p-1 text-slate-400 hover:text-blue-500 disabled:opacity-30"
                 onClick={() => handleMove(index, 'down')}
-                disabled={index === groups.length - 1}
+                disabled={index === safeGroups.length - 1}
                 title="下に移動"
               >
                 <ChevronDown size={16} />
@@ -88,7 +89,7 @@ const GroupEditor: React.FC<GroupEditorProps> = ({ courseId, groups }) => {
           </div>
 
           <div className="p-4 space-y-4">
-            <ItemEditor courseId={courseId} groupId={group.group_id} items={group.items} />
+            <ItemEditor courseId={courseId} groupId={group.group_id} items={group.items || []} />
           </div>
         </div>
       ))}

@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRegimenStore } from '../store';
 import { Plus, ChevronRight, ChevronDown, Trash2, Copy, GripVertical, Settings2 } from 'lucide-react';
 import GroupEditor from './GroupEditor';
 
 const CourseEditor: React.FC = () => {
   const { currentRegimen, addCourse, cloneCourse, deleteCourse, updateCourse } = useRegimenStore();
+  const courses = currentRegimen?.regimen_core?.courses || [];
   const [activeCourseId, setActiveCourseId] = useState<string | null>(
-    currentRegimen?.regimen_core.courses[0]?.course_id || null
+    courses[0]?.course_id || null
   );
+
+  useEffect(() => {
+    const activeExists = courses.some(c => c.course_id === activeCourseId);
+    if (!activeExists && courses.length > 0) {
+      setActiveCourseId(courses[0].course_id);
+    }
+  }, [courses, activeCourseId]);
 
   if (!currentRegimen) return null;
 
-  const courses = currentRegimen.regimen_core.courses;
-  const activeCourse = courses.find(c => c.course_id === activeCourseId);
+  const activeCourse = courses.find(c => c.course_id === activeCourseId) || courses[0];
 
   return (
     <div className="grid grid-cols-12 gap-8">

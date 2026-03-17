@@ -9,8 +9,9 @@ interface ItemEditorProps {
   items: Item[];
 }
 
-const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items }) => {
+const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items = [] }) => {
   const { addItem, deleteItem, updateItem } = useRegimenStore();
+  const safeItems = items || [];
 
   const handleUpdate = (itemId: string, updates: Partial<Item>) => {
     updateItem(courseId, groupId, itemId, updates);
@@ -21,7 +22,7 @@ const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items }) => 
 
   return (
     <div className="space-y-4">
-      {items.map((item) => (
+      {safeItems.map((item) => (
         <div key={item.item_id} className="grid grid-cols-12 gap-3 p-3 bg-slate-50/50 rounded-lg border border-slate-100 relative group/item">
           <div className="col-span-4">
             <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">薬剤名 (一般名・商品名)</label>
@@ -70,9 +71,9 @@ const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items }) => 
             <input 
               type="text"
               className="input text-sm"
-              value={item.schedule.excel_display_hint || ''}
+              value={item.schedule?.excel_display_hint || ''}
               onChange={(e) => handleUpdate(item.item_id, { 
-                schedule: { ...item.schedule, excel_display_hint: e.target.value } 
+                schedule: { ...(item.schedule || { repeat_pattern: '単回', day_start: 1 }), excel_display_hint: e.target.value } 
               })}
               placeholder="Day 1, 8, 15"
             />
@@ -105,7 +106,7 @@ const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items }) => 
               <input 
                 type="text"
                 className="input text-xs bg-white/50"
-                value={item.comments[0]?.text || ''}
+                value={item.comments?.[0]?.text || ''}
                 onChange={(e) => handleUpdate(item.item_id, { 
                   comments: [{ comment_type: '任意', text: e.target.value }] 
                 })}
