@@ -1,5 +1,5 @@
 export type AdministrationMethod = '経口' | '静注' | '点滴' | '皮下注' | '筋注' | '髄注';
-export type DoseUnit = 'mg/kg' | 'mg/m2' | 'mg/body' | 'AUC' | 'units/m²' | 'IU/m²' | 'IU/kg' | '手入力';
+export type DoseUnit = 'mg/kg' | 'mg/m2' | 'mg/body' | 'AUC' | 'units/m²' | 'IU/m²' | 'IU/kg' | 'mL' | '錠' | 'カプセル' | '瓶' | '手入力';
 export type RepeatPattern = '単回' | '連日' | '指定日' | '毎週' | '任意記述';
 export type GroupType = '前投薬' | '抗癌剤' | '支持療法' | 'フラッシュ' | '経口' | '補液' | 'その他';
 export type CommentType = '前投薬' | '時間指定' | '注意' | '運用' | '任意';
