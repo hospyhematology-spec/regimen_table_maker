@@ -26,9 +26,9 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
   const activeCourse = courses.find(c => c.course_id === activeCourseId) || courses[0];
 
   return (
-    <div className="grid grid-cols-12 gap-8">
+    <div className="grid grid-cols-12 gap-4">
       {/* Sidebar: Course List */}
-      <div className="col-span-3 space-y-4">
+      <div className="col-span-2 space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="font-bold text-slate-700">コース一覧</h3>
           <button 
@@ -77,7 +77,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
       </div>
 
       {/* Main: Active Course Content */}
-      <div className="col-span-9 space-y-6">
+      <div className="col-span-10 space-y-6">
         {activeCourse ? (
           <>
             <div className="card bg-white border-l-4 border-l-blue-600">
