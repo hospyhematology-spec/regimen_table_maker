@@ -9,8 +9,7 @@ export function buildRegimenPrompt(url: string, extractedText: string): string {
 4. dose=数値のみ（単位なし）、単位はdose_unitへ（例: dose="375", dose_unit="mg/m2"）。
 5. 希釈液（生食・5%ブドウ糖液等）は抗がん剤と「同じitem行のbase_solution」フィールドに記載。別行は不要。
    例) drug_name_display="リツキサン（リツキシマブ）", base_solution="生理食塩液 250mL"
-6. infusion_rateは必ず記載（PDFから抽出し、なければ日本添付文書の標準を補完）:
-   主な標準例: リツキシマブ初回4時間以上/2回目以降90分 / パクリタキセル3時間 / カルボプラチン1時間 / シクロホスファミド30分 / ドキソルビシン静注 / ポラツズマブベドチン90分(初回)以降30分短縮可 / オビヌツズマブ初回Day1は25mg/h→後半50mg/h・2回目以降100mg/hから開始
+6. infusion_rateには必ず「初回開始速度（例: 25mg/h, 50mL/h, 90分等）」のみを簡潔に記載し、途中の速度変更や2回目以降の速度指示（例: 30分毎に増量、2回目以降90分短縮可）は、当該薬剤のcomments（comment_type="時間指定"）へ漏れなく記載すること。
 7. excel_display_hintに必ず投与日を「Day X」のみの形式で記載し、「投与XX分前」などの時間指定は当該薬剤のcomments（comment_type="時間指定"）に記載すること。
 8. groupsの最初（sort_order=0）に必ず「ダミー本体」グループ（生食100mL・点滴・1瓶・20mL/h）を追加すること。
 9. groupsは実際の投与順に並べる: ダミー本体 → 前投薬 → フラッシュ → 本体抗がん剤 → 後フラッシュ → 支持療法。
