@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRegimenStore } from '../store';
 import { Regimen, RegimenCore, RegimenSupportInfo, Course } from '../types';
 import { Sparkles, Upload, Globe, FileText, Loader2, Key } from 'lucide-react';
-import { extractTextFromPdf, callGeminiAPI } from '../gemini';
+import { extractTextFromPdf, callGeminiAPI, fetchUrlContent } from '../gemini';
 import { v4 as uuidv4 } from 'uuid';
 import { buildRegimenPrompt } from '../promptBuilder';
 
@@ -13,6 +13,8 @@ interface AIGeneratorProps {
 const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
   const { setCurrentRegimen, regimens, setRegimens, currentRegimen } = useRegimenStore();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [genStatus, setGenStatus] = useState('');
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
@@ -52,7 +54,13 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         extractedText += pdfText + '\n\n';
       }
 
-      // Pass Step1 inputs so AI uses them for emetogenic risk, multi-course, etc.
+      setGenStatus('PDFテキスト抽出完了。URL情報を取得中...');
+      if (url) {
+        const urlText = await fetchUrlContent(url);
+        extractedText += `【WebページURL: ${url}】\n${urlText}\n\n`;
+      }
+
+      setGenStatus('AIがレジメン生成中... (30秒〜2分かかる場合があります)');
       const regimenName = currentRegimen?.regimen_core?.regimen_name || '';
       const cancerType = currentRegimen?.regimen_core?.cancer_type || '';
       const prompt = buildRegimenPrompt(url, extractedText, regimenName, cancerType);
@@ -135,15 +143,36 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         });
       });
 
+      // ── Post-generation validation scan ─────────────────────────
+      const warnings: string[] = [];
+      generatedRegimen.regimen_core.courses?.forEach((c: any) => {
+        c.groups?.forEach((g: any) => {
+          g.items?.forEach((i: any) => {
+            const name = i.drug_name_display || '(名称不明)';
+            if (!i.dose || i.dose === '' || i.dose === '0') warnings.push(`「${name}」: 用量が未入力`);
+            if (!i.dose_unit || i.dose_unit === '手入力') warnings.push(`「${name}」: 単位が未確認（手入力）`);
+            if (!i.infusion_rate) warnings.push(`「${name}」: 投与速度が未入力`);
+            if (!i.schedule?.excel_display_hint) warnings.push(`「${name}」: 投与日(Day)が未入力`);
+          });
+        });
+      });
+      setValidationWarnings(warnings);
+
       setRegimens([...regimens, generatedRegimen]);
       setCurrentRegimen(generatedRegimen);
       setIsGenerating(false);
-      alert('AIによるレジメンの生成が完了しました！内容を確認してください。');
+      setGenStatus('');
+      if (warnings.length === 0) {
+        alert('生成完了！内容を確認してください。');
+      } else {
+        alert(`生成完了。${warnings.length}件の要確認項目があります。`)
+      }
       onSelect();
     } catch (err: any) {
       console.error(err);
       alert('AI生成に失敗しました: ' + err.message);
       setIsGenerating(false);
+      setGenStatus('');
     }
   };
 
@@ -247,12 +276,34 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       >
         {isGenerating ? (
           <>
-            <Loader2 className="animate-spin" /> 解析中...
+            <Loader2 className="animate-spin" /> {genStatus || '解析中...'}
           </>
         ) : (
           <>AIで入力内容からレジメンを構築する</>
         )}
       </button>
+
+      {/* Validation warnings */}
+      {validationWarnings.length > 0 && (
+        <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 text-amber-700 font-bold text-sm mb-2">
+            ⚠️ 要確認項目（{validationWarnings.length}件）– Step3で手修正してください
+          </div>
+          <ul className="space-y-1 max-h-48 overflow-y-auto">
+            {validationWarnings.map((w, i) => (
+              <li key={i} className="text-xs text-amber-700 flex items-start gap-1">
+                <span className="shrink-0">•</span>{w}
+              </li>
+            ))}
+          </ul>
+          <button
+            className="text-xs text-amber-500 mt-2 hover:text-amber-700"
+            onClick={() => setValidationWarnings([])}
+          >
+            閉じる
+          </button>
+        </div>
+      )}
       <p className="mt-4 text-[10px] text-slate-400 text-center">
         ※ 実際のPDF内容やURLを入力して正確なAI解析を実行します。（ネット環境が必要です）
       </p>
