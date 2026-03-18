@@ -11,7 +11,7 @@ interface AIGeneratorProps {
 }
 
 const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
-  const { setCurrentRegimen, regimens, setRegimens } = useRegimenStore();
+  const { setCurrentRegimen, regimens, setRegimens, currentRegimen } = useRegimenStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
@@ -52,7 +52,10 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         extractedText += pdfText + '\n\n';
       }
 
-      const prompt = buildRegimenPrompt(url, extractedText);
+      // Pass Step1 inputs so AI uses them for emetogenic risk, multi-course, etc.
+      const regimenName = currentRegimen?.regimen_core?.regimen_name || '';
+      const cancerType = currentRegimen?.regimen_core?.cancer_type || '';
+      const prompt = buildRegimenPrompt(url, extractedText, regimenName, cancerType);
 
       const responseText = await callGeminiAPI(apiKey, prompt);
       const parsed = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
