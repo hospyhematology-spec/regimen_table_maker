@@ -70,13 +70,67 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         regimen_support_info: Object.assign({}, parsed.regimen_support_info, { basic_info: basicInfo + '\n' + (parsed.regimen_support_info?.basic_info || '') })
       };
       
-      // Assign UUIDs if missing
+      // ── normalize helpers ──────────────────────────────────────────
+      const normDoseUnit = (v: string): string => {
+        if (!v) return '手入力';
+        const map: Record<string, string> = {
+          'mg/m2': 'mg/m2', 'mg/m²': 'mg/m2', 'mg/m^2': 'mg/m2',
+          'mg/kg': 'mg/kg',
+          'mg/body': 'mg/body', 'mg': 'mg/body',
+          'auc': 'AUC', 'AUC': 'AUC',
+          'units/m2': 'units/m²', 'units/m²': 'units/m²',
+          'iu/m2': 'IU/m²', 'iu/m²': 'IU/m²', 'IU/m2': 'IU/m²',
+          'iu/kg': 'IU/kg', 'IU/kg': 'IU/kg',
+          'ml': 'mL', 'mL': 'mL', 'ML': 'mL',
+          '錠': '錠', '瓶': '瓶', 'カプセル': 'カプセル',
+          '手入力': '手入力',
+        };
+        return map[v] ?? map[v.toLowerCase()] ?? '手入力';
+      };
+      const normMethod = (v: string): string => {
+        const map: Record<string, string> = {
+          '経口': '経口', 'oral': '経口', 'po': '経口',
+          '静注': '静注', 'iv': '静注', 'static': '静注', '静脈注射': '静注', '静脈内': '静注',
+          '点滴': '点滴', 'drip': '点滴', '点滴静注': '点滴', 'ivdrip': '点滴',
+          '皮下注': '皮下注', 'sc': '皮下注', '皮下注射': '皮下注',
+          '筋注': '筋注', 'im': '筋注', '筋肉注射': '筋注',
+          '髄注': '髄注', 'it': '髄注', '髄腔内': '髄注',
+        };
+        return map[v] ?? map[v?.toLowerCase()] ?? '点滴';
+      };
+      const normGroupType = (v: string): string => {
+        const allowed = ['前投薬', '抗癌剤', '支持療法', 'フラッシュ', '経口', '補液', 'その他'];
+        return allowed.includes(v) ? v : 'その他';
+      };
+      const normRepeat = (v: string): string => {
+        const allowed = ['単回', '連日', '指定日', '毎週', '任意記述'];
+        return allowed.includes(v) ? v : '単回';
+      };
+      const normCommentType = (v: string): string => {
+        const allowed = ['前投薬', '時間指定', '注意', '運用', '任意'];
+        return allowed.includes(v) ? v : '任意';
+      };
+
+      // ── Assign UUIDs + normalize ─────────────────────────────────
       generatedRegimen.regimen_core.courses?.forEach((c: any) => {
         if (!c.course_id) c.course_id = uuidv4();
         c.groups?.forEach((g: any) => {
           if (!g.group_id) g.group_id = uuidv4();
+          g.group_type = normGroupType(g.group_type);
           g.items?.forEach((i: any) => {
             if (!i.item_id) i.item_id = uuidv4();
+            i.dose_unit = normDoseUnit(String(i.dose_unit ?? ''));
+            i.administration_method = normMethod(String(i.administration_method ?? ''));
+            i.dose = String(i.dose ?? '');
+            if (i.schedule) i.schedule.repeat_pattern = normRepeat(i.schedule.repeat_pattern);
+            if (Array.isArray(i.comments)) {
+              i.comments = i.comments.map((cm: any) => ({
+                comment_type: normCommentType(cm.comment_type),
+                text: cm.text ?? '',
+              }));
+            } else {
+              i.comments = [];
+            }
           });
         });
       });
