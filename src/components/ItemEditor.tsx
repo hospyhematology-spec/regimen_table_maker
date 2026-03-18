@@ -21,11 +21,11 @@ const UnitSelect: React.FC<{ value: string; onChange: (v: string) => void }> = (
   const inList = DOSE_UNITS.includes(value as DoseUnit);
   return (
     <select
-      className="input text-xs h-[30px] w-full px-0.5"
+      className="input text-xs w-full px-0.5 py-0"
+      style={{ height: 'auto', minHeight: '30px', lineHeight: 'normal' }}
       value={value}
       onChange={e => onChange(e.target.value)}
     >
-      {/* If value from AI is unknown, add it at top so it's visible */}
       {!inList && value && <option value={value}>{value}</option>}
       {DOSE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
     </select>

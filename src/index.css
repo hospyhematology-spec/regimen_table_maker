@@ -111,6 +111,14 @@ body {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
+/* Select elements: use tighter padding so text never clips */
+select.input {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  line-height: 1.4;
+  overflow: visible;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
