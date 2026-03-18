@@ -35,12 +35,27 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
       {/* Print CSS - injected inline so it's always available */}
       <style>{`
         @media print {
-          body > div > header,
-          .no-print { display: none !important; }
-          body > div > main { padding: 0 !important; max-width: 100% !important; }
-          .print-region { page-break-inside: avoid; }
-          .card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+          /* A4 Landscape is ideal for wide tables */
+          @page { size: A4 landscape; margin: 10mm; }
+          body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body > div > header, .no-print { display: none !important; }
+          body > div > main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+          
+          /* Set zoom to shrink content to fit on a single page better */
+          .print-wrapper {
+             /* 80% scale to fit more items vertically on one page */
+             zoom: 0.8; 
+             /* Fallback for firefox */
+             transform: scale(0.8);
+             transform-origin: top left;
+             width: 125%;
+          }
+          
+          .print-region { page-break-inside: avoid; break-inside: avoid; }
+          .card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; page-break-inside: avoid; break-inside: avoid; margin-bottom: 10px !important; }
           input, select { border: none !important; box-shadow: none !important; background: transparent !important; }
+          /* Keep input text readable and backgrounds visible */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
 
@@ -85,7 +100,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
         </div>
 
         {/* Main: Active Course Content – takes remaining full width */}
-        <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex-1 min-w-0 space-y-4 print-wrapper">
           {/* Print header (only shown in print) */}
           <div className="hidden print:block mb-4">
             <h1 className="text-2xl font-bold">{core.regimen_name}</h1>
@@ -112,7 +127,6 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ onNext }) => {
                 </button>
               </div>
 
-              {/* Print: course name */}
               <div className="hidden print:block font-bold text-base mb-2">{activeCourse.course_name}</div>
 
               <div className="print-region">
