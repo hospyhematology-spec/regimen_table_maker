@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRegimenStore } from '../store';
-import { FileText, Info, AlertOctagon, Play, StopCircle, ArrowDownCircle, AlertCircle, Bookmark, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { FileText, Info, AlertOctagon, Play, StopCircle, AlertCircle, Bookmark, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 
 interface SupportInfoFormProps {
   onNext?: () => void;
@@ -29,14 +29,13 @@ const SupportInfoForm: React.FC<SupportInfoFormProps> = ({ onNext }) => {
   };
 
   const sections = [
-    { id: 'basic_info', label: '1. 基本情報', icon: <Info size={18} />, placeholder: 'レジメンの概要、標準的な投与スケジュールなど' },
+    { id: 'basic_info', label: '1. 基本情報', icon: <Info size={18} />, placeholder: '臨床試験データのAbstractをそのまま貼り付けてください。' },
     { id: 'indications', label: '2. 適応症', icon: <FileText size={18} />, placeholder: '薬剤ごとの保険適応状況など' },
-    { id: 'contraindications', label: '3. 禁忌', icon: <AlertOctagon size={18} />, placeholder: '絶対禁忌、慎重投与など' },
-    { id: 'start_criteria', label: '4. 投与開始基準', icon: <Play size={18} />, placeholder: '白血球数、血小板数、肝機能、腎機能などの基準' },
-    { id: 'stop_criteria', label: '5. 中止基準', icon: <StopCircle size={18} />, placeholder: '治療を完全に終了する基準' },
-    { id: 'dose_reduction', label: '6. 減量基準', icon: <ArrowDownCircle size={18} />, placeholder: '副作用発生時の段階的な減量規定' },
-    { id: 'adverse_effects_and_management', label: '7. 副作用と対策', icon: <AlertCircle size={18} />, placeholder: '主な副作用（下痢、しびれ、アレルギー等）と具体的な対処法' },
-    { id: 'references', label: '8. 参考資料', icon: <Bookmark size={18} />, placeholder: '引用文献、URLなど' },
+    { id: 'contraindications', label: '3. 禁忌', icon: <AlertOctagon size={18} />, placeholder: '例（複数薬剤の場合）:\n・薬剤A）\n  - 禁忌項目1\n  - 禁忌項目2\n  - 併用禁忌：薬剤X、薬剤Y\n・薬剤B）\n  - 禁忌項目1' },
+    { id: 'start_criteria', label: '4. 投与開始基準', icon: <Play size={18} />, placeholder: '例（複数薬剤の場合）:\n・薬剤A）\n  - 白血球数 ≥ 3,000/μL\n  - 血小板数 ≥ 10万/μL\n・薬剤B）\n  - 腎機能 eGFR ≥ 60 mL/min' },
+    { id: 'stop_dose_reduction', label: '5. 中止/減量基準', icon: <StopCircle size={18} />, placeholder: '例（複数薬剤の場合）:\n・薬剤A）\n  - Grade 3以上の非血液毒性 → 投与中止\n  - Grade 2の末梢神経障害 → 20%減量\n・薬剤B）\n  - Grade 4の血液毒性 → 投与中止' },
+    { id: 'adverse_effects_and_management', label: '6. 副作用と対策', icon: <AlertCircle size={18} />, placeholder: '主な副作用（下痢、しびれ、アレルギー等）と具体的な対処法' },
+    { id: 'references', label: '7. 参考資料', icon: <Bookmark size={18} />, placeholder: '例:\n1. 著者名. タイトル. 雑誌名. 年;巻(号):頁-頁.\n2. 著者名. タイトル. 雑誌名. 年;巻(号):頁-頁.\n\nURL:\n・https://...' },
   ];
 
   return (

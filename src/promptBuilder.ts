@@ -89,6 +89,14 @@ export function buildRegimenPrompt(url: string, extractedText: string, regimenNa
 14. 日本保険診療準拠の投与量・投与方法・コース間隔を正確に記載すること。
 15. regimen_support_info全項目を日本の添付文書・ガイドライン（JSCO・日本血液学会・NCCN日本版等）に基づき詳細記載。
 16. 出力は純粋なJSONのみ。マークダウン記号・説明文は一切含めないこと。
+17. regimen_support_infoの各フィールド値はJSON文字列として有効でなければならない。改行は必ず \n（バックスラッシュn）でエスケープすること。リテラル改行を生のJSON文字列内に入れないこと。
+18. regimen_support_infoのフォーマット規則（文字列内で \n を使って改行）:
+    - basic_info: 試験名・主要論文・奏効率等をAbstract形式でまとめる。
+    - indications: 薬剤ごとに保険適応を記載。引用番号不要。
+    - contraindications: 複数薬剤の場合は「・薬剤A）\n  - 禁忌項目\n  - 併用禁忌：薬剤X、Y」の形式。
+    - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。
+    - stop_dose_reduction: 中止基準と減量基準を統合。複数薬剤の場合は「・薬剤A）\n  - Grade3以上 → 中止\n  - Grade2 → 20%減量」の形式。
+    - references: バンクーバー形式で番号付き。例: 「1. 著者. タイトル. 雑誌. 年;巻(号):頁.\n2. ...」
 
 [入力情報]
 URL参照: ${url}
@@ -209,14 +217,13 @@ G3 ベンダムスチン90mg/m² 生食500mL 点滴/60分 Day1,2
     ]
   },
   "regimen_support_info": {
-    "basic_info": "レジメン概要・エビデンス（試験名・主要論文・奏効率等）",
-    "indications": "日本国内承認の保険適用適応症（添付文書準拠）",
-    "contraindications": "禁忌事項（日本添付文書準拠: 過敏症・妊娠・重篤な臓器障害等）",
-    "start_criteria": "投与開始基準（PS・血液検査値・臓器機能など定量的基準）",
-    "stop_criteria": "投与中止・延期基準（CTCAEグレードや具体的な閾値）",
-    "dose_reduction": "減量・休薬基準（グレードと対応する投与量の変更方法）",
-    "adverse_effects_and_management": "主な副作用と対処法（発生頻度・グレード・具体的な対処を含む）",
-    "references": "参考文献（日本の添付文書・JSCO・日本血液学会ガイドライン・主要論文）"
+    "basic_info": "（試験名・奏効率等をAbstract形式で記載）",
+    "indications": "（薬剤ごとの保険適応。引用番号不要）",
+    "contraindications": "（禁忌項目を薬剤ごとに \\n で改行して記載。例: ・薬剤A）\\n  - 禁忌1\\n  - 併用禁忌：薬Z）",
+    "start_criteria": "（投与開始基準を薬剤ごとに \\n で改行して記載。例: ・薬剤A）\\n  - PS 0-2\\n  - WBC≥3000）",
+    "stop_dose_reduction": "（中止・減量基準を薬剤ごとに \\n で改行して記載。例: ・薬剤A）\\n  - Grade3以上→中止\\n  - Grade2→20%減量）",
+    "adverse_effects_and_management": "（主な副作用と対処法）",
+    "references": "（バンクーバー形式の参考文献。例: 1. 著者. タイトル. 雑誌. 年;巻:頁.）"
   }
 }
 `;

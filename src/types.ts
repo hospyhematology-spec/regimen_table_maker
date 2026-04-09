@@ -62,8 +62,7 @@ export interface RegimenSupportInfo {
   indications: string;
   contraindications: string;
   start_criteria: string;
-  stop_criteria: string;
-  dose_reduction: string;
+  stop_dose_reduction: string;
   adverse_effects_and_management: string;
   references: string;
 }

@@ -49,8 +49,7 @@ const createInitialRegimen = (): Regimen => ({
     indications: '',
     contraindications: '',
     start_criteria: '',
-    stop_criteria: '',
-    dose_reduction: '',
+    stop_dose_reduction: '',
     adverse_effects_and_management: '',
     references: ''
   }

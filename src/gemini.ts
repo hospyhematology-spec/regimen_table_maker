@@ -57,24 +57,50 @@ export const fetchUrlContent = async (url: string): Promise<string> => {
 export const callGeminiAPI = async (apiKey: string, prompt: string): Promise<string> => {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
   
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.1,     // Low temp = more deterministic / accurate
-        maxOutputTokens: 16000,
-      }
-    })
-  });
-  
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`API Error: ${response.status} ${err}`);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY_MS = 5000; // 5秒待ってリトライ
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          // responseMimeType は削除（JSON強制モードは503の原因になりやすい）
+          temperature: 0.1,
+          maxOutputTokens: 16000,
+        }
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.candidates[0].content.parts[0].text;
+    }
+
+    const errText = await response.text();
+
+    // 503/429 は一時的な過負荷 → リトライ
+    if ((response.status === 503 || response.status === 429) && attempt < MAX_RETRIES) {
+      console.warn(`API ${response.status} エラー (試行 ${attempt}/${MAX_RETRIES})。${RETRY_DELAY_MS/1000}秒後にリトライします...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempt));
+      continue;
+    }
+
+    // それ以外のエラー or リトライ上限
+    if (response.status === 503 || response.status === 429) {
+      throw new Error(`Gemini APIが混雑しています（${response.status}）。\n少し時間をおいてから再度お試しください。\n（通常は数分以内に回復します）`);
+    }
+    if (response.status === 400) {
+      throw new Error(`APIリクエストエラー（400）。APIキーが正しいか確認してください。\n詳細: ${errText.substring(0, 200)}`);
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`APIキーが無効または権限がありません（${response.status}）。\nAPI Keyを再確認してください。`);
+    }
+    throw new Error(`API Error: ${response.status}\n${errText.substring(0, 300)}`);
   }
-  
-  const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+
+  throw new Error('Gemini APIが混雑しています。しばらく待ってから再度お試しください。');
 };
+

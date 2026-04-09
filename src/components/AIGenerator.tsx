@@ -41,9 +41,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       text ? `手入力: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}` : ''
     ].filter(Boolean).join(' / ');
 
-    const basicInfo = `【AIによって生成された情報です。適宜修正してください。】\n\n入力元データ:\n${
-      files.length > 0 ? `・ファイル: ${fileNames}\n` : ''
-    }${url ? `・Web: ${url}\n` : ''}${text ? `・手入力テキスト: あり\n\n${text}` : ''}`;
+
 
     try {
       let extractedText = text ? `【手入力テキスト】\n${text}\n\n` : '';
@@ -66,7 +64,43 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       const prompt = buildRegimenPrompt(url, extractedText, regimenName, cancerType);
 
       const responseText = await callGeminiAPI(apiKey, prompt);
-      const parsed = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+      
+      // ── JSONクリーニング: マークダウン記号・JSONブロック外のテキストを除去 ──
+      let cleanedText = responseText
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
+
+      // JSON部分だけを抽出（最初の { から最後の } まで）
+      const jsonStart = cleanedText.indexOf('{');
+      const jsonEnd = cleanedText.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanedText = cleanedText.slice(jsonStart, jsonEnd + 1);
+      }
+
+      let parsed: any;
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch (parseErr) {
+        console.error('JSON parse error. Raw response:', responseText.substring(0, 500));
+        throw new Error(`AIの出力をJSONとして解析できませんでした。\n詳細: ${(parseErr as Error).message}\n※ APIキーが正しいか、入力内容が適切かご確認ください。`);
+      }
+
+      // ── support_info フィールド正規化 ──────────────────────────────
+      // AIがstop_criteria + dose_reductionを返した場合にstop_dose_reductionへ統合
+      const si = parsed.regimen_support_info || {};
+      if (!si.stop_dose_reduction) {
+        const stop = si.stop_criteria || '';
+        const dose = si.dose_reduction || '';
+        if (stop || dose) {
+          si.stop_dose_reduction = [stop, dose].filter(Boolean).join('\n\n');
+        } else {
+          si.stop_dose_reduction = '';
+        }
+      }
+      // 不要な旧フィールドを削除
+      delete si.stop_criteria;
+      delete si.dose_reduction;
 
       const generatedRegimen: Regimen = {
         schema_version: '1.0',
@@ -75,7 +109,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         regimen_core: Object.assign({}, parsed.regimen_core, { reference_sources: sources }),
-        regimen_support_info: Object.assign({}, parsed.regimen_support_info, { basic_info: basicInfo + '\n' + (parsed.regimen_support_info?.basic_info || '') })
+        regimen_support_info: si
       };
       
       // ── normalize helpers ──────────────────────────────────────────
