@@ -67,8 +67,9 @@ export const callGeminiAPI = async (apiKey: string, prompt: string): Promise<str
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
+          responseMimeType: "application/json",
           temperature: 0.1,
-          maxOutputTokens: 8192, // 16000から8192に下げて安定性を向上
+          maxOutputTokens: 8192,
         }
       })
     });
