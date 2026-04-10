@@ -55,7 +55,7 @@ export const fetchUrlContent = async (url: string): Promise<string> => {
 };
 
 export const callGeminiAPI = async (apiKey: string, prompt: string): Promise<string> => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
   
   const MAX_RETRIES = 3;
   const RETRY_DELAY_MS = 5000; // 5秒待ってリトライ
