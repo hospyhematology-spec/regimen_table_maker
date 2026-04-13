@@ -97,7 +97,7 @@ export function buildRegimenPrompt(url: string, extractedText: string, regimenNa
     - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。※好中球数、血小板数、AST/ALT、ビリルビン等の『具体的な検査値条件』を省略せず詳細に列挙すること。
     - stop_dose_reduction: 中止基準と減量基準を統合し、「・薬剤A）\n  - Grade3以上の〇〇 → 中止\n  - CCR 30-50mL/min → XXmgへ減量」の形式。※パーセント減量や具体的なミリグラム数、Grade数値などを極めて詳細に列挙すること。
     - adverse_effects_and_management: 非常に重要な項目であるため、絶対に省略せず必ず主力すること。空欄や欠落は絶対に認めない。「・副作用名 → 具体的な対処法や支持療法の指示」の形式で詳細に羅列すること。
-    - references: バンクーバー形式で番号付き。例: 「1. 著者. タイトル. 雑誌. 年;巻(号):頁.\n2. ...」
+19. `treatment_purpose` と `interval_days` は極めて重要な管理データです。絶対に省略せず、推測してでも必ず文字列や数値（例: 21）で埋めること。
 
 [入力情報]
 URL参照: ${url}
@@ -142,9 +142,9 @@ G3 ベンダムスチン90mg/m² 生食500mL 点滴/60分 Day1,2
 [出力JSONスキーマ（厳守）]
 {
   "regimen_core": {
-    "regimen_name": "正式レジメン名（例: Pola-BR療法、R-CHOP療法）",
+    "regimen_name": "正式レジメン名（例: Pola-BR療法、R-CHOP療法）※絶対に空欄にしないこと",
     "cancer_type": "日本保険病名準拠の疾患名（例: びまん性大細胞型B細胞リンパ腫）",
-    "treatment_purpose": "治療目的（例: 再発難治、一次治療、寛解導入）",
+    "treatment_purpose": "治療目的（例: 再発難治、一次治療、術後補助療法等）※判定できない場合も推測して絶対に記載すること。空欄禁止。",
     "inpatient_outpatient": "入院 または 外来",
     "interval_days": 21,
     "reference_sources": "添付文書・ガイドライン名・論文",
