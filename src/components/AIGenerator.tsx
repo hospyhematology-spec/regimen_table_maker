@@ -150,6 +150,15 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
           i.dose_unit = normDoseUnit(String(i.dose_unit ?? ''));
           i.administration_method = normMethod(String(i.administration_method ?? ''));
           i.dose = String(i.dose ?? '');
+          
+          // AIがscheduleオブジェクトを作らず直にexcel_display_hintを置いた場合の救済処置
+          if (!i.schedule && (i.excel_display_hint !== undefined || i.day_start !== undefined || i.repeat_pattern !== undefined)) {
+            i.schedule = {
+              excel_display_hint: i.excel_display_hint,
+              day_start: i.day_start,
+              repeat_pattern: i.repeat_pattern
+            };
+          }
           if (i.schedule) i.schedule.repeat_pattern = normRepeat(i.schedule.repeat_pattern);
           if (Array.isArray(i.comments)) {
             i.comments = i.comments.map((cm: any) => ({
