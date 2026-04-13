@@ -154,7 +154,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
           if (Array.isArray(i.comments)) {
             i.comments = i.comments.map((cm: any) => ({
               comment_type: normCommentType(cm.comment_type),
-              text: cm.text ?? '',
+              text: cm.text || cm.comment || '',
             }));
           } else {
             i.comments = [];
