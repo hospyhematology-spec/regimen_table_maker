@@ -63,6 +63,25 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       throw new Error(`AIの出力をJSONとして解析できませんでした。\n詳細: ${(parseErr as Error).message}\n貼り付けたテキストが正しいかご確認ください。`);
     }
 
+    // ── スキーマの自動補正（AIがregimen_coreで囲み忘れた場合） ──
+    if (!parsed.regimen_core) {
+      if (parsed.regimen_name || parsed.courses) {
+        parsed = {
+          regimen_core: parsed,
+          regimen_support_info: parsed.regimen_support_info || {}
+        };
+      } else if (parsed.response?.regimen_core) {
+        parsed = parsed.response;
+      } else {
+        console.error("Parsed Object Missing 'regimen_core':", parsed);
+        throw new Error("AIが生成したテキストに必要な「レジメン情報（regimen_core）」が含まれていません。\nChatGPTの返答が途中で切れていないか確認してください。途中で止まっている場合はChatGPTで「続けて」と送信し、すべての出力をコピーし結合して貼り付けてください。");
+      }
+    }
+
+    if (!parsed.regimen_core.courses || !Array.isArray(parsed.regimen_core.courses) || parsed.regimen_core.courses.length === 0) {
+        throw new Error("AIからコース情報（お薬のスケジュール）が1つも返ってきませんでした。\n出力内容に不備があるか、コピー漏れの可能性があります。");
+    }
+
     const si = parsed.regimen_support_info || {};
     if (!si.stop_dose_reduction) {
       const stop = si.stop_criteria || '';
