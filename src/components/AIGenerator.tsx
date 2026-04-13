@@ -78,6 +78,10 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       }
     }
 
+    // AIが省略した場合のデフォルト値を強制補完
+    if (!parsed.regimen_core.treatment_purpose) parsed.regimen_core.treatment_purpose = "未記載（手入力してください）";
+    if (!parsed.regimen_core.interval_days) parsed.regimen_core.interval_days = 21;
+
     if (!parsed.regimen_core.courses || !Array.isArray(parsed.regimen_core.courses) || parsed.regimen_core.courses.length === 0) {
         throw new Error("AIからコース情報（お薬のスケジュール）が1つも返ってきませんでした。\n出力内容に不備があるか、コピー漏れの可能性があります。");
     }
