@@ -90,13 +90,13 @@ export function buildRegimenPrompt(url: string, extractedText: string, regimenNa
 15. regimen_support_info全項目を日本の添付文書・ガイドライン（JSCO・日本血液学会・NCCN日本版等）に基づき詳細記載。
 16. 出力は純粋なJSONのみ。マークダウン記号・説明文は一切含めないこと。
 17. regimen_support_infoの各フィールド値はJSON文字列として有効でなければならない。改行は必ず \n（バックスラッシュn）でエスケープすること。リテラル改行を生のJSON文字列内に入れないこと。
-18. regimen_support_infoのフォーマット規則（文字列内で \n を使って改行）:
-    - basic_info: 試験名・主要論文・奏効率等をAbstract形式でまとめる。
+18. regimen_support_infoのフォーマット規則（非常に重要: 省略・簡略化は厳禁。誰が見ても実務で使えるレベルの具体的かつ詳細な数値を記載すること）:
+    - basic_info: 試験名・主要論文・奏効率等をAbstract形式で詳細にまとめる。
     - indications: 薬剤ごとに保険適応を記載。引用番号不要。
-    - contraindications: 複数薬剤の場合は「・薬剤A）\n  - 禁忌項目\n  - 併用禁忌：薬剤X、Y」の形式。
-    - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。
-    - stop_dose_reduction: 中止基準と減量基準を統合。複数薬剤の場合は「・薬剤A）\n  - Grade3以上 → 中止\n  - Grade2 → 20%減量」の形式。
-    - adverse_effects_and_management: 非常に重要な項目であるため、絶対に省略せず必ず主力すること。空欄や欠落は絶対に認めない。「・副作用名 → 対処法」の形式で羅列すること。
+    - contraindications: 複数薬剤の場合は「・薬剤A）\n  - 禁忌項目\n  - 併用禁忌：薬剤X、Y」の形式。※「重度腎障害」と濁さず、「Ccr<30mL/min未満」などの『具体的な検査値・数値』を極力詳細に記載すること。
+    - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。※好中球数、血小板数、AST/ALT、ビリルビン等の『具体的な検査値条件』を省略せず詳細に列挙すること。
+    - stop_dose_reduction: 中止基準と減量基準を統合し、「・薬剤A）\n  - Grade3以上の〇〇 → 中止\n  - CCR 30-50mL/min → XXmgへ減量」の形式。※パーセント減量や具体的なミリグラム数、Grade数値などを極めて詳細に列挙すること。
+    - adverse_effects_and_management: 非常に重要な項目であるため、絶対に省略せず必ず主力すること。空欄や欠落は絶対に認めない。「・副作用名 → 具体的な対処法や支持療法の指示」の形式で詳細に羅列すること。
     - references: バンクーバー形式で番号付き。例: 「1. 著者. タイトル. 雑誌. 年;巻(号):頁.\n2. ...」
 
 [入力情報]
