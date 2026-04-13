@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRegimenStore } from '../store';
 import { Regimen, RegimenCore, RegimenSupportInfo, Course } from '../types';
 import { Sparkles, Upload, Globe, FileText, Loader2, Key } from 'lucide-react';
-import { extractTextFromPdf, callGeminiAPI, fetchUrlContent } from '../gemini';
+import { extractTextFromPdf, callGeminiAPI, callOpenAIAPI, callAnthropicAPI, fetchUrlContent } from '../gemini';
 import { v4 as uuidv4 } from 'uuid';
 import { buildRegimenPrompt } from '../promptBuilder';
 
@@ -18,11 +18,27 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [aiProvider, setAiProvider] = useState<'gemini' | 'openai' | 'anthropic'>('gemini');
+  const [apiKeys, setApiKeys] = useState<{ [key: string]: string }>(() => ({
+    gemini: localStorage.getItem('gemini_api_key') || '',
+    openai: localStorage.getItem('openai_api_key') || '',
+    anthropic: localStorage.getItem('anthropic_api_key') || '',
+  }));
+
+  const currentApiKey = apiKeys[aiProvider] || '';
+
+  const handleApiKeyChange = (val: string) => {
+    setApiKeys(prev => ({ ...prev, [aiProvider]: val }));
+  };
+
+  const clearCurrentApiKey = () => {
+    setApiKeys(prev => ({ ...prev, [aiProvider]: '' }));
+    localStorage.removeItem(`${aiProvider}_api_key`);
+  };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
-      alert('Gemini API Keyを入力してください。');
+    if (!currentApiKey) {
+      alert(`${aiProvider.toUpperCase()} API Keyを入力してください。`);
       return;
     }
     
@@ -32,7 +48,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
     }
 
     setIsGenerating(true);
-    localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem(`${aiProvider}_api_key`, currentApiKey);
 
     const fileNames = files.map(f => f.name).join(', ');
     const sources = [
@@ -58,12 +74,19 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
         extractedText += `【WebページURL: ${url}】\n${urlText}\n\n`;
       }
 
-      setGenStatus('AIがレジメン生成中... (30秒〜2分かかる場合があります)');
+      setGenStatus(`${aiProvider.toUpperCase()}でレジメン生成中... (30秒〜2分かかる場合があります)`);
       const regimenName = currentRegimen?.regimen_core?.regimen_name || '';
       const cancerType = currentRegimen?.regimen_core?.cancer_type || '';
       const prompt = buildRegimenPrompt(url, extractedText, regimenName, cancerType);
 
-      const responseText = await callGeminiAPI(apiKey, prompt);
+      let responseText = '';
+      if (aiProvider === 'gemini') {
+        responseText = await callGeminiAPI(currentApiKey, prompt);
+      } else if (aiProvider === 'openai') {
+        responseText = await callOpenAIAPI(currentApiKey, prompt);
+      } else if (aiProvider === 'anthropic') {
+        responseText = await callAnthropicAPI(currentApiKey, prompt);
+      }
       
       // ── JSONクリーニング: マークダウン記号・JSONブロック外のテキストを除去 ──
       let cleanedText = responseText
@@ -218,19 +241,37 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
       </div>
 
       <div className="flex flex-col gap-4 mb-6">
+        <div className="bg-white p-4 rounded-xl border border-blue-100 flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-blue-700 font-bold mb-1">
+            <Globe size={18} />
+            <span className="text-sm">使用するAIエンジン（Gemini混雑時の回避用）</span>
+          </div>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="ai_provider" value="gemini" checked={aiProvider === 'gemini'} onChange={() => setAiProvider('gemini')} />
+              <span className="text-sm font-medium">Google Gemini</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="ai_provider" value="anthropic" checked={aiProvider === 'anthropic'} onChange={() => setAiProvider('anthropic')} />
+              <span className="text-sm font-medium">Claude (Anthropic)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="ai_provider" value="openai" checked={aiProvider === 'openai'} onChange={() => setAiProvider('openai')} />
+              <span className="text-sm font-medium">ChatGPT (OpenAI)</span>
+            </label>
+          </div>
+        </div>
+
         <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-yellow-800 font-bold">
               <Key size={18} />
-              <span className="text-sm">Gemini API Key (必須)</span>
+              <span className="text-sm">{aiProvider.toUpperCase()} API Key (必須)</span>
             </div>
-            {apiKey && (
+            {currentApiKey && (
               <button 
                 className="text-xs text-yellow-700 underline hover:text-yellow-600"
-                onClick={() => {
-                  setApiKey('');
-                  localStorage.removeItem('gemini_api_key');
-                }}
+                onClick={clearCurrentApiKey}
               >
                 クリア(削除)
               </button>
@@ -239,9 +280,9 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
           <input 
             type="password" 
             className="input text-sm" 
-            placeholder="AI処理に必須（API Keyを入力）"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={`${aiProvider.toUpperCase()}のAPI Keyを入力`}
+            value={currentApiKey}
+            onChange={(e) => handleApiKeyChange(e.target.value)}
           />
           <div className="text-[10px] text-yellow-700 mt-1 leading-relaxed">
             <p className="font-bold border-b border-yellow-200 pb-1 mb-1">【セキュリティについて】</p>

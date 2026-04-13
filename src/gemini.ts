@@ -115,3 +115,52 @@ export const callGeminiAPI = async (apiKey: string, prompt: string): Promise<str
   throw new Error('Gemini APIとの通信が規定回数タイムアウト・失敗しました。ネットワーク状況を確認してください。');
 };
 
+export const callOpenAIAPI = async (apiKey: string, prompt: string): Promise<string> => {
+  const url = 'https://api.openai.com/v1/chat/completions';
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      response_format: { type: "json_object" }
+    })
+  });
+  
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI API Error: ${response.status}\n${err.substring(0, 300)}`);
+  }
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
+
+export const callAnthropicAPI = async (apiKey: string, prompt: string): Promise<string> => {
+  const url = 'https://api.anthropic.com/v1/messages';
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-latest',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: prompt + "\n\n必ずJSON形式の文字列だけを返してください。周囲にマークダウンのバッククォートなどはつけないでください。" }],
+      temperature: 0.1
+    })
+  });
+  
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Claude API Error: ${response.status}\n${err.substring(0, 300)}`);
+  }
+  const data = await response.json();
+  return data.content[0].text;
+};
