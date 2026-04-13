@@ -96,6 +96,7 @@ export function buildRegimenPrompt(url: string, extractedText: string, regimenNa
     - contraindications: 複数薬剤の場合は「・薬剤A）\n  - 禁忌項目\n  - 併用禁忌：薬剤X、Y」の形式。
     - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。
     - stop_dose_reduction: 中止基準と減量基準を統合。複数薬剤の場合は「・薬剤A）\n  - Grade3以上 → 中止\n  - Grade2 → 20%減量」の形式。
+    - adverse_effects_and_management: 非常に重要な項目であるため、絶対に省略せず必ず主力すること。空欄や欠落は絶対に認めない。「・副作用名 → 対処法」の形式で羅列すること。
     - references: バンクーバー形式で番号付き。例: 「1. 著者. タイトル. 雑誌. 年;巻(号):頁.\n2. ...」
 
 [入力情報]
