@@ -435,7 +435,7 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
                   value={generatedPrompt}
                 />
               </div>
-
+              <div className="mt-4 border-t border-emerald-200 pt-4">
                 <div className="flex flex-col gap-1 text-emerald-800 font-bold mb-3">
                   <span className="text-[15px]">Step 2: AIの回答結果をここに貼り付け</span>
                   <span className="text-xs font-normal text-emerald-700">

@@ -97,7 +97,7 @@ export function buildRegimenPrompt(url: string, extractedText: string, regimenNa
     - start_criteria: 複数薬剤の場合は「・薬剤A）\n  - PS 0-2\n  - 白血球数 ≥ 3000/μL」の形式。※好中球数、血小板数、AST/ALT、ビリルビン等の『具体的な検査値条件』を省略せず詳細に列挙すること。
     - stop_dose_reduction: 中止基準と減量基準を統合し、「・薬剤A）\n  - Grade3以上の〇〇 → 中止\n  - CCR 30-50mL/min → XXmgへ減量」の形式。※パーセント減量や具体的なミリグラム数、Grade数値などを極めて詳細に列挙すること。
     - adverse_effects_and_management: 非常に重要な項目であるため、絶対に省略せず必ず主力すること。空欄や欠落は絶対に認めない。「・副作用名 → 具体的な対処法や支持療法の指示」の形式で詳細に羅列すること。
-19. `treatment_purpose` と `interval_days` は極めて重要な管理データです。絶対に省略せず、推測してでも必ず文字列や数値（例: 21）で埋めること。
+19. treatment_purpose と interval_days は極めて重要な管理データです。絶対に省略せず、推測してでも必ず文字列や数値（例: 21）で埋めること。
 
 [入力情報]
 URL参照: ${url}
