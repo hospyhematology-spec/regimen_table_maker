@@ -105,44 +105,48 @@ const ItemEditor: React.FC<ItemEditorProps> = ({ courseId, groupId, items = [] }
               </div>
 
               {/* 薬剤名 – text-xs (12px) */}
-              <input type="text" className="input text-xs h-[30px] w-full"
+              <input type="text" className="input text-xs h-[30px] w-full min-w-0"
                 value={item.drug_name_display} title={item.drug_name_display}
                 onChange={e => upd(item.item_id, { drug_name_display: e.target.value })}
                 placeholder="リツキサン（リツキシマブ）" />
 
               {/* 希釈液 */}
-              <input type="text" className="input text-xs h-[30px] w-full bg-sky-50/80 border-sky-100"
+              <input type="text" className="input text-xs h-[30px] w-full bg-sky-50/80 border-sky-100 min-w-0"
                 value={item.base_solution || ''} title={item.base_solution || ''}
                 onChange={e => upd(item.item_id, { base_solution: e.target.value })}
                 placeholder="生食250mL" />
 
               {/* 投与方法 */}
-              <select className="input text-xs h-[30px] w-full px-0.5"
-                value={item.administration_method}
-                onChange={e => upd(item.item_id, { administration_method: e.target.value as AdministrationMethod })}>
-                {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <div className="w-full min-w-0 overflow-hidden">
+                <select className="input text-xs h-[30px] w-full px-0.5"
+                  value={item.administration_method}
+                  onChange={e => upd(item.item_id, { administration_method: e.target.value as AdministrationMethod })}>
+                  {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
 
               {/* 用量 */}
-              <input type="text" className="input text-xs h-[30px] w-full"
+              <input type="text" className="input text-xs h-[30px] w-full min-w-0"
                 value={item.dose} title={item.dose}
                 onChange={e => upd(item.item_id, { dose: e.target.value })}
                 placeholder="375" />
 
               {/* 単位 – always shows current value even if not in list */}
-              <UnitSelect
-                value={item.dose_unit || '手入力'}
-                onChange={v => upd(item.item_id, { dose_unit: v as DoseUnit })}
-              />
+              <div className="w-full min-w-0 overflow-hidden">
+                <UnitSelect
+                  value={item.dose_unit || '手入力'}
+                  onChange={v => upd(item.item_id, { dose_unit: v as DoseUnit })}
+                />
+              </div>
 
               {/* 速度 */}
-              <input type="text" className="input text-xs h-[30px] w-full"
+              <input type="text" className="input text-xs h-[30px] w-full min-w-0"
                 value={item.infusion_rate || ''} title={item.infusion_rate || ''}
                 onChange={e => upd(item.item_id, { infusion_rate: e.target.value })}
                 placeholder="90分" />
 
               {/* 投与日 */}
-              <input type="text" className="input text-xs h-[30px] w-full"
+              <input type="text" className="input text-xs h-[30px] w-full min-w-0"
                 value={item.schedule?.excel_display_hint || ''} title={item.schedule?.excel_display_hint || ''}
                 onChange={e => upd(item.item_id, { schedule: { ...(item.schedule || { repeat_pattern: '単回', day_start: 1 }), excel_display_hint: e.target.value } })}
                 placeholder="Day 1, 8, 15" />
