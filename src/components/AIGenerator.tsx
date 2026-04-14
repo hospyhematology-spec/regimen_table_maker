@@ -436,21 +436,23 @@ const AIGenerator: React.FC<AIGeneratorProps> = ({ onSelect }) => {
                 />
               </div>
 
-              <div className="mt-4 border-t border-emerald-200 pt-4">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold mb-2">
-                  <span className="text-sm">AIから返ってきたJSONをここに貼り付け (Step 2)</span>
+                <div className="flex flex-col gap-1 text-emerald-800 font-bold mb-3">
+                  <span className="text-[15px]">Step 2: AIの回答結果をここに貼り付け</span>
+                  <span className="text-xs font-normal text-emerald-700">
+                    ※ ChatGPT等の画面にある「回答をコピーする（📋等のアイコン）」ボタンを押して、文字をそのままここに「ペースト（貼り付け）」してください。挨拶文等が含まれていても自動でカットします。
+                  </span>
                 </div>
                 <textarea 
-                  className="w-full h-32 p-3 text-sm font-mono border-2 border-dashed border-emerald-300 rounded-lg text-slate-700 placeholder-emerald-300 focus:border-emerald-500"
-                  placeholder="AIが生成した { から } までのJSONを貼り付け..."
+                  className="w-full h-32 p-4 text-sm font-mono border-2 border-dashed border-emerald-400 rounded-lg text-slate-700 placeholder-emerald-300 focus:border-emerald-600 bg-emerald-50/50"
+                  placeholder="ここにChatGPTの回答を貼り付けます..."
                   value={manualJsonInput}
                   onChange={(e) => setManualJsonInput(e.target.value)}
                 />
                 <button 
-                  className="mt-3 btn bg-emerald-600 hover:bg-emerald-700 text-white w-full py-3 font-bold shadow-lg shadow-emerald-200 disabled:opacity-50"
+                  className="mt-4 btn bg-emerald-600 hover:bg-emerald-700 text-white w-full py-4 text-[15px] font-bold shadow-lg shadow-emerald-200 disabled:opacity-50"
                   onClick={handleProcessManualJson}
                 >
-                  JSONを取り込んでレジメンを構築する
+                  回答を取り込んでレジメン表を構築する (Step 3へ)
                 </button>
               </div>
             </div>
